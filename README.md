@@ -1,5 +1,8 @@
 # Concepts Browser
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.22342838.svg)](https://doi.org/10.5281/zenodo.22342838)
+[![License: Elastic 2.0](https://img.shields.io/badge/license-Elastic--2.0-blue.svg)](LICENSE)
+
 A web application and API for storing, browsing and versioning **clinical concept
 definitions** — a schema-conformant JSON plus an optional Python snippet, per data source,
 with full audit trails. The JSON + Python are evaluated by a separate package

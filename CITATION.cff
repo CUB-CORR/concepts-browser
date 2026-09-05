@@ -68,6 +68,7 @@ authors:
   given-names: Felix
   affiliation: Charité – Universitätsmedizin Berlin, corporate member of Freie Universität Berlin and Humboldt-Universität zu Berlin, Institute of Medical Informatics, Charitéplatz 1, 10117 Berlin, Germany
 - name: CORR Group
+doi: 10.5281/zenodo.22342838
 repository-code: https://github.com/CUB-CORR/concepts-browser
 license-url: https://www.elastic.co/licensing/elastic-license
 version: 1.0.0
