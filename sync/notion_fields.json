@@ -1,0 +1,7 @@
+{
+	"_comment": "Maps the exported documentation fields to the property names of YOUR Notion database. Left side: fixed field keys the API understands (see api/importer.py); right side: the column names as they appear in Notion. `clinical`/`implementation`/`caveats` must be rich-text properties; `status` a status property. The page title must equal the concept's canonical (corr_v1) name.",
+	"clinical": "Description (clinical)",
+	"implementation": "Description (implementation)",
+	"caveats": "Known Caveats",
+	"status": "Status"
+}

@@ -1,0 +1,169 @@
+# API + SvelteKit frontend, plus an optional vars-sync sidecar (profile "sync") that mirrors
+# an upstream vars repo into the reference dataset. Put a TLS-terminating reverse proxy in
+# front of `frontend` (and, if you expose it, `api`) for a real deployment.
+#
+# Required in .env (compose substitutes these):
+#   INTERNAL_TOKEN          shared secret for the api <-> vars-sync reimport call
+#   APP_SHARED_SECRET       shared secret the frontend sends so the api trusts it as the app
+#   BOOTSTRAP_ADMIN_PASSWORD / JWT_SECRET  — set strong values, don't ship the defaults
+# Optional: DATABASE_URL, IMPORT_MESSAGE, FRONTEND_ORIGIN, LDAP_*, EXCHANGE_*, PUBLIC_*
+#           branding, NOTION_API_KEY, NOTION_DATABASE_ID; VARS_* with `--profile sync`.
+# See example.env for the full annotated list.
+services:
+  api:
+    build: .
+    image: ghcr.io/cub-corr/concepts-browser/api:${IMAGE_TAG:-latest}
+    environment:
+      DATABASE_URL: ${DATABASE_URL:-sqlite:////data/concepts.db}
+      JWT_SECRET: ${JWT_SECRET:-change-me-in-production}
+      BOOTSTRAP_ADMIN_USERNAME: ${BOOTSTRAP_ADMIN_USERNAME:-admin}
+      BOOTSTRAP_ADMIN_PASSWORD: ${BOOTSTRAP_ADMIN_PASSWORD:-admin}
+      TOKEN_EXPIRE_HOURS: ${TOKEN_EXPIRE_HOURS:-24}
+      SCHEMA_DIR: ${SCHEMA_DIR:-/srv/schemas}
+      # TEMPORARY: while querying isn't live, stamp imported configs "not enabled" so the UI
+      # signals they aren't queryable yet. Remove this line to restore the normal message.
+      IMPORT_MESSAGE: ${IMPORT_MESSAGE:-Version currently not enabled}
+      # Taxonomy the Notion documentation export's page titles are resolved in on import
+      # (empty = the default taxonomy). See the NOTION_* block on vars-sync below.
+      NOTION_DOCS_TAXONOMY: ${NOTION_DOCS_TAXONOMY:-}
+      # The same Notion credentials on the api let `docker compose exec api python -m
+      # api.reimport` pull the documentation itself, which is what a deployment running
+      # WITHOUT the sync sidecar needs — otherwise a manual reimport applies whatever
+      # notion_docs.json happens to sit in the reference dir. Unset = no pull (the reimport
+      # says so and continues); set but unreachable = the reimport aborts before upserting.
+      # Column mapping: notion_fields.json in the reference dir below, else the built-in
+      # default (see api/notion_pull.py); NOTION_FIELDS_FILE overrides the location.
+      NOTION_API_KEY: ${NOTION_API_KEY:-}
+      NOTION_DATABASE_ID: ${NOTION_DATABASE_ID:-}
+      NOTION_FIELDS_FILE: ${NOTION_FIELDS_FILE:-}
+      # Guards POST /internal/reimport (used only by vars-sync over this network).
+      INTERNAL_TOKEN: ${INTERNAL_TOKEN:?set INTERNAL_TOKEN in .env}
+      # Shared secret the frontend sends as X-App-Secret to mark internal (project-free)
+      # concept requests; must match the frontend's value below.
+      APP_SHARED_SECRET: ${APP_SHARED_SECRET:?set APP_SHARED_SECRET in .env}
+      # Path prefix the reverse proxy serves the API under (Caddy strips /api before
+      # forwarding). Makes the OpenAPI docs emit correctly-prefixed URLs. Empty ⇒ root.
+      ROOT_PATH: ${ROOT_PATH:-/api}
+      # LDAP directory sign-in (see api/config.py for the semantics of each setting). Off by
+      # default: the bootstrap admin logs in with a local password. Point these at your
+      # institution's directory to let directory users sign in.
+      LDAP_ENABLED: ${LDAP_ENABLED:-false}
+      LDAP_SERVER_URI: ${LDAP_SERVER_URI:-}
+      LDAP_SEARCH_BASE: ${LDAP_SEARCH_BASE:-}
+      LDAP_GUID_ATTRIBUTE: ${LDAP_GUID_ATTRIBUTE:-entryUUID}
+      LDAP_SEARCH_BIND_DN: ${LDAP_SEARCH_BIND_DN:-}
+      LDAP_SEARCH_BIND_PASSWORD: ${LDAP_SEARCH_BIND_PASSWORD:-}
+      LDAP_TLS_CA_CERTS_FILE: ${LDAP_TLS_CA_CERTS_FILE:-}
+      # Outbound mail via Exchange Web Services, sending as a shared functional mailbox. Off
+      # unless EXCHANGE_ENABLED=true, so a dev stack never mails real people. Verify the
+      # login with:  docker compose exec api python -m api.mail_check
+      EXCHANGE_ENABLED: ${EXCHANGE_ENABLED:-false}
+      EXCHANGE_SERVER: ${EXCHANGE_SERVER:-}
+      # If the server rejects the bare login, mail_check will tell you which spelling and auth
+      # scheme it does accept (e.g. EXCHANGE_USERNAME=DOMAIN\user).
+      EXCHANGE_USERNAME: ${EXCHANGE_USERNAME:-}
+      EXCHANGE_PASSWORD: ${EXCHANGE_PASSWORD:-}
+      EXCHANGE_MAILBOX: ${EXCHANGE_MAILBOX:-}
+      EXCHANGE_AUTH_TYPE: ${EXCHANGE_AUTH_TYPE:-NTLM}
+      # Product name + contact address used in notification emails.
+      APP_DISPLAY_NAME: ${APP_DISPLAY_NAME:-Concepts Browser}
+      CONTACT_EMAIL: ${CONTACT_EMAIL:-}
+      # Linked in the approval email, so it must be the app's public URL in production.
+      FRONTEND_ORIGIN: ${FRONTEND_ORIGIN:-http://localhost:3000}
+    volumes:
+      - conceptsdata:/data
+      # Live schema edits without a rebuild: update files in ./reference/schema on the
+      # host, then restart the service. Remove to use the image's baked-in copy.
+      - ./reference/schema:/srv/schemas:ro
+      # Shared with vars-sync: it stages updated vars.json/variables.py here — plus the
+      # source's data files (files/<relpath>, walked into the versioned file library on
+      # import) and pyapi.json (the code editor's completion surface, served straight from
+      # here) — then triggers a reimport, which is where the DB work happens. The sidecar
+      # never touches the database; this volume is the whole interface.
+      # As a NAMED volume it auto-seeds from the image's baked-in copy on first up.
+      - refdata:/srv/reference
+    ports:
+      - "8000:8000"
+    restart: unless-stopped
+
+  frontend:
+    build: ./app
+    image: ghcr.io/cub-corr/concepts-browser/app:${IMAGE_TAG:-latest}
+    environment:
+      # Server-side only; the browser never talks to the API directly.
+      API_INTERNAL_URL: http://api:8000
+      # Public origin the app is served from (adapter-node checks it on form POSTs).
+      ORIGIN: ${FRONTEND_ORIGIN:-http://localhost:3000}
+      # Must match the api's APP_SHARED_SECRET: sent as X-App-Secret so the API treats the
+      # app's concept requests as internal (no project required).
+      APP_SHARED_SECRET: ${APP_SHARED_SECRET:?set APP_SHARED_SECRET in .env}
+      # Runtime branding overrides (see app/src/lib/brand.ts; unset = shipped defaults,
+      # the literal value "none" hides an optional element).
+      PUBLIC_APP_NAME: ${PUBLIC_APP_NAME:-}
+      PUBLIC_LOGIN_HINT: ${PUBLIC_LOGIN_HINT:-}
+      PUBLIC_API_DOCS_URL: ${PUBLIC_API_DOCS_URL:-}
+      PUBLIC_BRAND_LOGO: ${PUBLIC_BRAND_LOGO:-}
+      PUBLIC_BRAND_LOGO_DARK: ${PUBLIC_BRAND_LOGO_DARK:-}
+      PUBLIC_BRAND_BACKGROUND: ${PUBLIC_BRAND_BACKGROUND:-}
+      PUBLIC_FOOTER_TEXT: ${PUBLIC_FOOTER_TEXT:-}
+      PUBLIC_FOOTER_LOGO: ${PUBLIC_FOOTER_LOGO:-}
+      PUBLIC_FOOTER_LOGO_DARK: ${PUBLIC_FOOTER_LOGO_DARK:-}
+      PUBLIC_FOOTER_URL: ${PUBLIC_FOOTER_URL:-}
+      PUBLIC_DIRECTORY_LOGO: ${PUBLIC_DIRECTORY_LOGO:-}
+      PUBLIC_DIRECTORY_LOGO_DARK: ${PUBLIC_DIRECTORY_LOGO_DARK:-}
+      # Issue-tracker URL template behind the concept page's "Report issue" button
+      # ({tax_name}/{concept_name} are substituted); unset ⇒ no button.
+      PUBLIC_GITHUB_ISSUE_URL: ${PUBLIC_GITHUB_ISSUE_URL:-}
+      # PUBLIC_BUILD_COMMIT (footer build hash) is deliberately not listed here: CI bakes it
+      # into the published image's ENV, and an empty entry would overwrite it.
+    depends_on:
+      - api
+    ports:
+      - "3000:3000"
+    restart: unless-stopped
+
+  # Optional: mirrors an upstream vars repo into the reference dataset. Start it with
+  # `docker compose --profile sync up` and set VARS_REPO (+ VARS_GITHUB_TOKEN if private).
+  vars-sync:
+    profiles: ["sync"]
+    build: ./sync
+    image: ghcr.io/cub-corr/concepts-browser/sync:${IMAGE_TAG:-latest}
+    environment:
+      GITHUB_REPO: ${VARS_REPO:-}
+      GITHUB_BRANCH: ${VARS_BRANCH:-main}
+      GITHUB_TOKEN: ${VARS_GITHUB_TOKEN:-}
+      POLL_INTERVAL: ${VARS_POLL_INTERVAL:-60}
+      # The upstream package dir holding variables.py and the data files it reads. The
+      # sidecar lists it recursively to resolve each variable's file references.
+      MAPPING_DIR: ${VARS_MAPPING_DIR:-src/corr_vars/sources/cub_hdp/mapping}
+      # The source key the generated pyapi.json is served under; must match the API's
+      # IMPORT_SOURCE_KEY, or GET /sources/<key>/pyapi 404s. Empty = derived from MAPPING_DIR.
+      SOURCE_KEY: ${IMPORT_SOURCE_KEY:-}
+      # Fetched flat, by basename: vars.json + variables.py, plus the two parquet mappings
+      # that drive the auto-generated medication/laboratory variables (regenerated by the API
+      # on each reimport). The per-variable data files are staged separately, under files/,
+      # keeping their relative paths — see sync/sync.py. Unset to use the code default, which
+      # derives these four paths from MAPPING_DIR.
+      FILES: ${VARS_FILES:-}
+      # Definitions-only sources synced alongside the primary one, `key=repo/dir` comma-
+      # separated. They have no variables.py, so there is nothing to scan and no completion
+      # surface to build: only their vars.json/units.json are staged, as <key>_vars.json /
+      # <key>_units.json — the names the API's REFERENCE_DATASETS reads them under.
+      EXTRA_SOURCES: ${VARS_EXTRA_SOURCES:-}
+      TARGET_DIR: /data/reference
+      API_INTERNAL_URL: http://api:8000
+      INTERNAL_TOKEN: ${INTERNAL_TOKEN:?set INTERNAL_TOKEN in .env}
+      # Optional Notion documentation export (see sync/notion_fields.json for the column
+      # mapping; bind-mount your own file and set NOTION_FIELDS_FILE to use it).
+      NOTION_API_KEY: ${NOTION_API_KEY:-}
+      NOTION_DATABASE_ID: ${NOTION_DATABASE_ID:-}
+      NOTION_POLL_INTERVAL: ${NOTION_POLL_INTERVAL:-600}
+    volumes:
+      - refdata:/data/reference
+    depends_on:
+      - api
+    restart: unless-stopped
+
+volumes:
+  conceptsdata:
+  refdata:

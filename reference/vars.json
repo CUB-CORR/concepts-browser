@@ -1,0 +1,27 @@
+{
+  "corr_defaults": {
+    "default_vars": {
+      "global": [
+        "heart_rate",
+        "mean_arterial_pressure"
+      ]
+    }
+  },
+  "variables": {
+    "heart_rate": {
+      "type": "native_dynamic",
+      "table_name": "vitals",
+      "where_clause": "signal_name = 'heart_rate'",
+      "filter": "value >= 0 AND value <= 300"
+    },
+    "mean_arterial_pressure": {
+      "type": "native_dynamic",
+      "table_name": "vitals",
+      "where_clause": "signal_name = 'mean_arterial_pressure'"
+    },
+    "invalid_example": {
+      "type": "native_dynamic",
+      "where_clause": "signal_name = 'admission_time'"
+    }
+  }
+}

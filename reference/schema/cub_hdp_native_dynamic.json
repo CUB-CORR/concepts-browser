@@ -1,0 +1,30 @@
+{
+ "$schema": "https://json-schema.org/draft/2020-12/schema",
+ "$id": "https://example.org/src/cub_hdp/native_dynamic/schema.json",
+ "title": "Native Dynamic Schema (example)",
+ "description": "Basic example schema for native dynamic variables: extract rows from a source table, optionally filtered. Real deployments replace this with their institution's schema set by mounting their own SCHEMA_DIR.",
+ "type": "object",
+ "required": [
+  "type",
+  "table_name"
+ ],
+ "additionalProperties": false,
+ "properties": {
+  "type": {
+   "description": "The type of the variable",
+   "const": "native_dynamic"
+  },
+  "table_name": {
+   "type": "string",
+   "description": "The table to extract the data from"
+  },
+  "where_clause": {
+   "type": "string",
+   "description": "The WHERE clause selecting this variable's rows"
+  },
+  "filter": {
+   "type": "string",
+   "description": "An additional predicate applied to the extracted values"
+  }
+ }
+}

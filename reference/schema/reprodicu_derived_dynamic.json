@@ -1,0 +1,55 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://corr.charite.de/corr-vars/src/reprodicu/derived_dynamic/schema.json",
+    "title": "reprodICU Derived Dynamic Schema",
+    "description": "A time-resolved value computed from other columns of a reprodICU table (e.g. blood pressure coalesced from its invasive and non-invasive measurements). Upstream's vars.json carries no `type` key, so the importer derives one from the entry's shape: `calculation` present -> derived_*, absent -> native_*; `dynamic: false` -> *_static, `dynamic` absent or true -> *_dynamic. The four reprodicu schemas encode that same rule, so a definition can only ever validate against the type it would be assigned.",
+    "type": "object",
+    "required": [
+        "type",
+        "path",
+        "column",
+        "is_struct",
+        "filter",
+        "calculation"
+    ],
+    "additionalProperties": false,
+    "properties": {
+        "type": {
+            "description": "The type of the variable",
+            "const": "derived_dynamic"
+        },
+        "path": {
+            "type": "string",
+            "description": "The reprodICU table the inputs of `calculation` are read from (e.g. `timeseries_vitals`)"
+        },
+        "column": {
+            "type": "string",
+            "description": "Name the computed column is materialised under, and the one `filter` addresses"
+        },
+        "is_struct": {
+            "type": "boolean",
+            "description": "Whether the computed column is a polars struct rather than a plain value; the filter then addresses its fields with `.struct.field(...)`"
+        },
+        "filter": {
+            "type": "string",
+            "description": "Polars predicate selecting this variable's rows, as an expression over `pl`"
+        },
+        "calculation": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Polars expression computing `column` from other columns of `path`. Its presence is what makes the variable derived rather than native",
+            "examples": [
+                "pl.when(pl.col('Invasive mean arterial pressure').is_not_null()).then(pl.col('Invasive mean arterial pressure')).otherwise(pl.col('Non-invasive mean arterial pressure'))"
+            ]
+        },
+        "dynamic": {
+            "description": "Whether the variable is time-resolved. Absent means dynamic; upstream only ever writes this key out as `false`",
+            "const": true
+        },
+        "unit": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Unit of the computed values, folded in from the source's units.json at import. Absent for dimensionless variables (scores, flags, categories)"
+        }
+    }
+}

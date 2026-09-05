@@ -1,0 +1,962 @@
+{
+    "variables": {
+        "blood_sodium": {
+            "path": "timeseries_labs",
+            "column": "Sodium",
+            "is_struct": true,
+            "filter": "(pl.col('Sodium').struct.field('value').is_not_null()) & (pl.col('Sodium').struct.field('system').is_in(['Blood', 'Blood arterial', 'Serum or Plasma', 'Urine']))"
+        },
+        "blood_potassium": {
+            "path": "timeseries_labs",
+            "column": "Potassium",
+            "is_struct": true,
+            "filter": "(pl.col('Potassium').struct.field('value').is_not_null()) & (pl.col('Potassium').struct.field('system').is_in(['Blood', 'Blood arterial', 'Serum or Plasma']))"
+        },
+        "blood_chloride": {
+            "path": "timeseries_labs",
+            "column": "Chloride",
+            "is_struct": true,
+            "filter": "(pl.col('Chloride').struct.field('value').is_not_null()) & (pl.col('Chloride').struct.field('system').is_in(['Blood', 'Blood arterial', 'Serum or Plasma']))"
+        },
+        "blood_creatinine": {
+            "path": "timeseries_labs",
+            "column": "Creatinine",
+            "is_struct": true,
+            "filter": "(pl.col('Creatinine').struct.field('value').is_not_null()) & (pl.col('Creatinine').struct.field('system').is_in(['Blood', 'Serum or Plasma']))"
+        },
+        "blood_glucose": {
+            "path": "timeseries_labs",
+            "column": "Glucose",
+            "is_struct": true,
+            "filter": "(pl.col('Glucose').struct.field('value').is_not_null()) & (pl.col('Glucose').struct.field('system').is_in(['Blood', 'Serum or Plasma', 'Blood arterial']))"
+        },
+        "blood_hemoglobin": {
+            "path": "timeseries_labs",
+            "column": "Hemoglobin",
+            "is_struct": true,
+            "filter": "(pl.col('Hemoglobin').struct.field('value').is_not_null()) & (pl.col('Hemoglobin').struct.field('system').is_in(['Blood']))"
+        },
+        "blood_hematocrit": {
+            "path": "timeseries_labs",
+            "column": "Hematocrit",
+            "is_struct": true,
+            "filter": "(pl.col('Hematocrit').struct.field('value').is_not_null()) & (pl.col('Hematocrit').struct.field('system').is_in(['Blood']))"
+        },
+        "blood_platelets": {
+            "path": "timeseries_labs",
+            "column": "Platelets",
+            "is_struct": true,
+            "filter": "(pl.col('Platelets').struct.field('value').is_not_null()) & (pl.col('Platelets').struct.field('system').is_in(['Blood']))"
+        },
+        "blood_wbc": {
+            "path": "timeseries_labs",
+            "column": "Leukocytes",
+            "is_struct": true,
+            "filter": "(pl.col('Leukocytes').struct.field('value').is_not_null()) & (pl.col('Leukocytes').struct.field('system').is_in(['Blood']))"
+        },
+        "blood_lactate": {
+            "path": "timeseries_labs",
+            "column": "Lactate",
+            "is_struct": true,
+            "filter": "(pl.col('Lactate').struct.field('value').is_not_null()) & (pl.col('Lactate').struct.field('system').is_in(['Blood', 'Blood arterial']))"
+        },
+        "blood_ph": {
+            "path": "timeseries_labs",
+            "column": "pH",
+            "is_struct": true,
+            "filter": "(pl.col('pH').struct.field('value').is_not_null()) & (pl.col('pH').struct.field('system').is_in(['Blood arterial']))"
+        },
+        "blood_bicarbonate": {
+            "path": "timeseries_labs",
+            "column": "Bicarbonate",
+            "is_struct": true,
+            "filter": "(pl.col('Bicarbonate').struct.field('value').is_not_null()) & (pl.col('Bicarbonate').struct.field('system').is_in(['Blood', 'Blood arterial', 'Serum or Plasma']))"
+        },
+        "blood_bilirubin": {
+            "path": "timeseries_labs",
+            "column": "Bilirubin",
+            "is_struct": true,
+            "filter": "(pl.col('Bilirubin').struct.field('value').is_not_null()) & (pl.col('Bilirubin').struct.field('system').is_in(['Serum or Plasma']))"
+        },
+        "blood_urea_nitrogen": {
+            "path": "timeseries_labs",
+            "column": "Urea nitrogen",
+            "is_struct": true,
+            "filter": "(pl.col('Urea nitrogen').struct.field('value').is_not_null()) & (pl.col('Urea nitrogen').struct.field('system').is_in(['Blood', 'Serum or Plasma']))"
+        },
+        "blood_albumin": {
+            "path": "timeseries_labs",
+            "column": "Albumin",
+            "is_struct": true,
+            "filter": "(pl.col('Albumin').struct.field('value').is_not_null()) & (pl.col('Albumin').struct.field('system').is_in(['Serum or Plasma']))"
+        },
+        "blood_alt": {
+            "path": "timeseries_labs",
+            "column": "Alanine aminotransferase",
+            "is_struct": true,
+            "filter": "(pl.col('Alanine aminotransferase').struct.field('value').is_not_null()) & (pl.col('Alanine aminotransferase').struct.field('system').is_in(['Serum or Plasma']))"
+        },
+        "blood_ast": {
+            "path": "timeseries_labs",
+            "column": "Aspartate aminotransferase",
+            "is_struct": true,
+            "filter": "(pl.col('Aspartate aminotransferase').struct.field('value').is_not_null()) & (pl.col('Aspartate aminotransferase').struct.field('system').is_in(['Serum or Plasma']))"
+        },
+        "blood_troponin_i": {
+            "path": "timeseries_labs",
+            "column": "Troponin I.cardiac",
+            "is_struct": true,
+            "filter": "(pl.col('Troponin I.cardiac').struct.field('value').is_not_null()) & (pl.col('Troponin I.cardiac').struct.field('system').is_in(['Serum or Plasma']))"
+        },
+        "blood_troponin_t": {
+            "path": "timeseries_labs",
+            "column": "Troponin T.cardiac",
+            "is_struct": true,
+            "filter": "(pl.col('Troponin T.cardiac').struct.field('value').is_not_null()) & (pl.col('Troponin T.cardiac').struct.field('system').is_in(['Blood', 'Serum or Plasma']))"
+        },
+        "blood_nt_probnp": {
+            "path": "timeseries_labs",
+            "column": "Natriuretic peptide.B prohormone N-Terminal",
+            "is_struct": true,
+            "filter": "(pl.col('Natriuretic peptide.B prohormone N-Terminal').struct.field('value').is_not_null()) & (pl.col('Natriuretic peptide.B prohormone N-Terminal').struct.field('system').is_in(['Serum or Plasma']))"
+        },
+        "blood_crp": {
+            "path": "timeseries_labs",
+            "column": "C reactive protein",
+            "is_struct": true,
+            "filter": "(pl.col('C reactive protein').struct.field('value').is_not_null()) & (pl.col('C reactive protein').struct.field('system').is_in(['Serum or Plasma']))"
+        },
+        "blood_inr": {
+            "path": "timeseries_labs",
+            "column": "INR",
+            "is_struct": true,
+            "filter": "(pl.col('INR').struct.field('value').is_not_null()) & (pl.col('INR').struct.field('system').is_in(['Blood', 'Platelet poor plasma']))"
+        },
+        "blood_aptt": {
+            "path": "timeseries_labs",
+            "column": "aPTT",
+            "is_struct": true,
+            "filter": "(pl.col('aPTT').struct.field('value').is_not_null()) & (pl.col('aPTT').struct.field('system').is_in(['Blood', 'Platelet poor plasma']))"
+        },
+        "blood_pco2": {
+            "path": "timeseries_labs",
+            "column": "Carbon dioxide",
+            "is_struct": true,
+            "filter": "(pl.col('Carbon dioxide').struct.field('value').is_not_null()) & (pl.col('Carbon dioxide').struct.field('system').is_in(['Blood', 'Blood arterial']))"
+        },
+        "blood_po2": {
+            "path": "timeseries_labs",
+            "column": "Oxygen",
+            "is_struct": true,
+            "filter": "(pl.col('Oxygen').struct.field('value').is_not_null()) & (pl.col('Oxygen').struct.field('system').is_in(['Blood arterial', 'Blood', 'Blood venous']))"
+        },
+        "blood_base_excess": {
+            "path": "timeseries_labs",
+            "column": "Base excess",
+            "is_struct": true,
+            "filter": "(pl.col('Base excess').struct.field('value').is_not_null()) & (pl.col('Base excess').struct.field('system').is_in(['Blood', 'Blood arterial']))"
+        },
+        "blood_oxygen_saturation": {
+            "path": "timeseries_labs",
+            "column": "Oxygen saturation",
+            "is_struct": true,
+            "filter": "(pl.col('Oxygen saturation').struct.field('value').is_not_null()) & (pl.col('Oxygen saturation').struct.field('system').is_in(['Blood', 'Blood arterial']))"
+        },
+        "blood_calcium": {
+            "path": "timeseries_labs",
+            "column": "Calcium",
+            "is_struct": true,
+            "filter": "(pl.col('Calcium').struct.field('value').is_not_null()) & (pl.col('Calcium').struct.field('system').is_in(['Blood', 'Serum or Plasma']))"
+        },
+        "blood_calcium_ionized": {
+            "path": "timeseries_labs",
+            "column": "Calcium.ionized",
+            "is_struct": true,
+            "filter": "(pl.col('Calcium.ionized').struct.field('value').is_not_null()) & (pl.col('Calcium.ionized').struct.field('system').is_in(['Blood', 'Blood arterial']))"
+        },
+        "blood_magnesium": {
+            "path": "timeseries_labs",
+            "column": "Magnesium",
+            "is_struct": true,
+            "filter": "(pl.col('Magnesium').struct.field('value').is_not_null()) & (pl.col('Magnesium').struct.field('system').is_in(['Blood', 'Serum or Plasma']))"
+        },
+        "blood_phosphate": {
+            "path": "timeseries_labs",
+            "column": "Phosphate",
+            "is_struct": true,
+            "filter": "(pl.col('Phosphate').struct.field('value').is_not_null()) & (pl.col('Phosphate').struct.field('system').is_in(['Blood', 'Serum or Plasma']))"
+        },
+        "blood_lactate_dehydrogenase": {
+            "path": "timeseries_labs",
+            "column": "Lactate dehydrogenase",
+            "is_struct": true,
+            "filter": "(pl.col('Lactate dehydrogenase').struct.field('value').is_not_null()) & (pl.col('Lactate dehydrogenase').struct.field('system').is_in(['Serum or Plasma']))"
+        },
+        "blood_creatine_kinase": {
+            "path": "timeseries_labs",
+            "column": "Creatine kinase",
+            "is_struct": true,
+            "filter": "(pl.col('Creatine kinase').struct.field('value').is_not_null()) & (pl.col('Creatine kinase').struct.field('system').is_in(['Serum or Plasma']))"
+        },
+        "blood_creatine_kinase_mb": {
+            "path": "timeseries_labs",
+            "column": "Creatine kinase.MB",
+            "is_struct": true,
+            "filter": "(pl.col('Creatine kinase.MB').struct.field('value').is_not_null()) & (pl.col('Creatine kinase.MB').struct.field('system').is_in(['Serum or Plasma']))"
+        },
+        "blood_alkaline_phosphatase": {
+            "path": "timeseries_labs",
+            "column": "Alkaline phosphatase",
+            "is_struct": true,
+            "filter": "(pl.col('Alkaline phosphatase').struct.field('value').is_not_null()) & (pl.col('Alkaline phosphatase').struct.field('system').is_in(['Blood', 'Serum or Plasma']))"
+        },
+        "blood_gamma_glutamyl_transferase": {
+            "path": "timeseries_labs",
+            "column": "Gamma glutamyl transferase",
+            "is_struct": true,
+            "filter": "(pl.col('Gamma glutamyl transferase').struct.field('value').is_not_null()) & (pl.col('Gamma glutamyl transferase').struct.field('system').is_in(['Serum or Plasma']))"
+        },
+        "blood_bilirubin_direct": {
+            "path": "timeseries_labs",
+            "column": "Bilirubin.glucuronidated+Bilirubin.albumin bound",
+            "is_struct": true,
+            "filter": "(pl.col('Bilirubin.glucuronidated+Bilirubin.albumin bound').struct.field('value').is_not_null()) & (pl.col('Bilirubin.glucuronidated+Bilirubin.albumin bound').struct.field('system').is_in(['Serum or Plasma']))"
+        },
+        "blood_protein": {
+            "path": "timeseries_labs",
+            "column": "Protein",
+            "is_struct": true,
+            "filter": "(pl.col('Protein').struct.field('value').is_not_null()) & (pl.col('Protein').struct.field('system').is_in(['Serum or Plasma']))"
+        },
+        "blood_urate": {
+            "path": "timeseries_labs",
+            "column": "Urate",
+            "is_struct": true,
+            "filter": "(pl.col('Urate').struct.field('value').is_not_null()) & (pl.col('Urate').struct.field('system').is_in(['Serum or Plasma']))"
+        },
+        "blood_cholesterol": {
+            "path": "timeseries_labs",
+            "column": "Cholesterol",
+            "is_struct": true,
+            "filter": "(pl.col('Cholesterol').struct.field('value').is_not_null()) & (pl.col('Cholesterol').struct.field('system').is_in(['Serum or Plasma']))"
+        },
+        "blood_triglyceride": {
+            "path": "timeseries_labs",
+            "column": "Triglyceride",
+            "is_struct": true,
+            "filter": "(pl.col('Triglyceride').struct.field('value').is_not_null()) & (pl.col('Triglyceride').struct.field('system').is_in(['Blood', 'Serum or Plasma']))"
+        },
+        "blood_erythrocytes": {
+            "path": "timeseries_labs",
+            "column": "Erythrocytes",
+            "is_struct": true,
+            "filter": "(pl.col('Erythrocytes').struct.field('value').is_not_null()) & (pl.col('Erythrocytes').struct.field('system').is_in(['Blood']))"
+        },
+        "blood_mcv": {
+            "path": "timeseries_labs",
+            "column": "Erythrocyte mean corpuscular volume",
+            "is_struct": true,
+            "filter": "(pl.col('Erythrocyte mean corpuscular volume').struct.field('value').is_not_null()) & (pl.col('Erythrocyte mean corpuscular volume').struct.field('system').is_in(['Red Blood Cells']))"
+        },
+        "blood_mch": {
+            "path": "timeseries_labs",
+            "column": "Erythrocyte mean corpuscular hemoglobin",
+            "is_struct": true,
+            "filter": "(pl.col('Erythrocyte mean corpuscular hemoglobin').struct.field('value').is_not_null()) & (pl.col('Erythrocyte mean corpuscular hemoglobin').struct.field('system').is_in(['Red Blood Cells']))"
+        },
+        "blood_mchc": {
+            "path": "timeseries_labs",
+            "column": "Erythrocyte mean corpuscular hemoglobin concentration",
+            "is_struct": true,
+            "filter": "(pl.col('Erythrocyte mean corpuscular hemoglobin concentration').struct.field('value').is_not_null()) & (pl.col('Erythrocyte mean corpuscular hemoglobin concentration').struct.field('system').is_in(['Red Blood Cells']))"
+        },
+        "blood_neutrophils_percent": {
+            "path": "timeseries_labs",
+            "column": "Neutrophils/100 leukocytes",
+            "is_struct": true,
+            "filter": "(pl.col('Neutrophils/100 leukocytes').struct.field('value').is_not_null()) & (pl.col('Neutrophils/100 leukocytes').struct.field('system').is_in(['Blood']))"
+        },
+        "blood_lymphocytes_percent": {
+            "path": "timeseries_labs",
+            "column": "Lymphocytes/100 leukocytes",
+            "is_struct": true,
+            "filter": "(pl.col('Lymphocytes/100 leukocytes').struct.field('value').is_not_null()) & (pl.col('Lymphocytes/100 leukocytes').struct.field('system').is_in(['Blood']))"
+        },
+        "blood_monocytes_percent": {
+            "path": "timeseries_labs",
+            "column": "Monocytes/100 leukocytes",
+            "is_struct": true,
+            "filter": "(pl.col('Monocytes/100 leukocytes').struct.field('value').is_not_null()) & (pl.col('Monocytes/100 leukocytes').struct.field('system').is_in(['Blood']))"
+        },
+        "blood_eosinophils_percent": {
+            "path": "timeseries_labs",
+            "column": "Eosinophils/100 leukocytes",
+            "is_struct": true,
+            "filter": "(pl.col('Eosinophils/100 leukocytes').struct.field('value').is_not_null()) & (pl.col('Eosinophils/100 leukocytes').struct.field('system').is_in(['Blood']))"
+        },
+        "blood_basophils_percent": {
+            "path": "timeseries_labs",
+            "column": "Basophils/100 leukocytes",
+            "is_struct": true,
+            "filter": "(pl.col('Basophils/100 leukocytes').struct.field('value').is_not_null()) & (pl.col('Basophils/100 leukocytes').struct.field('system').is_in(['Blood']))"
+        },
+        "blood_neutrophils_segmented_percent": {
+            "path": "timeseries_labs",
+            "column": "Neutrophils.segmented/100 leukocytes",
+            "is_struct": true,
+            "filter": "(pl.col('Neutrophils.segmented/100 leukocytes').struct.field('value').is_not_null()) & (pl.col('Neutrophils.segmented/100 leukocytes').struct.field('system').is_in(['Blood']))"
+        },
+        "blood_neutrophils_band_percent": {
+            "path": "timeseries_labs",
+            "column": "Neutrophils.band form/100 leukocytes",
+            "is_struct": true,
+            "filter": "(pl.col('Neutrophils.band form/100 leukocytes').struct.field('value').is_not_null()) & (pl.col('Neutrophils.band form/100 leukocytes').struct.field('system').is_in(['Blood']))"
+        },
+        "blood_reticulocytes_percent": {
+            "path": "timeseries_labs",
+            "column": "Reticulocytes/100 erythrocytes",
+            "is_struct": true,
+            "filter": "(pl.col('Reticulocytes/100 erythrocytes').struct.field('value').is_not_null()) & (pl.col('Reticulocytes/100 erythrocytes').struct.field('system').is_in(['Blood']))"
+        },
+        "blood_ferritin": {
+            "path": "timeseries_labs",
+            "column": "Ferritin",
+            "is_struct": true,
+            "filter": "(pl.col('Ferritin').struct.field('value').is_not_null()) & (pl.col('Ferritin').struct.field('system').is_in(['Serum or Plasma']))"
+        },
+        "blood_iron": {
+            "path": "timeseries_labs",
+            "column": "Iron",
+            "is_struct": true,
+            "filter": "(pl.col('Iron').struct.field('value').is_not_null()) & (pl.col('Iron').struct.field('system').is_in(['Serum or Plasma']))"
+        },
+        "blood_transferrin": {
+            "path": "timeseries_labs",
+            "column": "Transferrin",
+            "is_struct": true,
+            "filter": "(pl.col('Transferrin').struct.field('value').is_not_null()) & (pl.col('Transferrin').struct.field('system').is_in(['Serum or Plasma']))"
+        },
+        "blood_fibrinogen": {
+            "path": "timeseries_labs",
+            "column": "Fibrinogen",
+            "is_struct": true,
+            "filter": "(pl.col('Fibrinogen').struct.field('value').is_not_null()) & (pl.col('Fibrinogen').struct.field('system').is_in(['Platelet poor plasma']))"
+        },
+        "blood_d_dimer": {
+            "path": "timeseries_labs",
+            "column": "Fibrin D-dimer DDU",
+            "is_struct": true,
+            "filter": "(pl.col('Fibrin D-dimer DDU').struct.field('value').is_not_null()) & (pl.col('Fibrin D-dimer DDU').struct.field('system').is_in(['Blood', 'Platelet poor plasma']))"
+        },
+        "blood_thyrotropin": {
+            "path": "timeseries_labs",
+            "column": "Thyrotropin",
+            "is_struct": true,
+            "filter": "(pl.col('Thyrotropin').struct.field('value').is_not_null()) & (pl.col('Thyrotropin').struct.field('system').is_in(['Serum or Plasma']))"
+        },
+        "blood_thyroxine": {
+            "path": "timeseries_labs",
+            "column": "Thyroxine",
+            "is_struct": true,
+            "filter": "(pl.col('Thyroxine').struct.field('value').is_not_null()) & (pl.col('Thyroxine').struct.field('system').is_in(['Serum or Plasma']))"
+        },
+        "blood_thyroxine_free": {
+            "path": "timeseries_labs",
+            "column": "Thyroxine free",
+            "is_struct": true,
+            "filter": "(pl.col('Thyroxine free').struct.field('value').is_not_null()) & (pl.col('Thyroxine free').struct.field('system').is_in(['Serum or Plasma']))"
+        },
+        "blood_triiodothyronine": {
+            "path": "timeseries_labs",
+            "column": "Triiodothyronine",
+            "is_struct": true,
+            "filter": "(pl.col('Triiodothyronine').struct.field('value').is_not_null()) & (pl.col('Triiodothyronine').struct.field('system').is_in(['Serum or Plasma']))"
+        },
+        "blood_cobalamin": {
+            "path": "timeseries_labs",
+            "column": "Cobalamin",
+            "is_struct": true,
+            "filter": "(pl.col('Cobalamin').struct.field('value').is_not_null()) & (pl.col('Cobalamin').struct.field('system').is_in(['Serum or Plasma']))"
+        },
+        "blood_folate": {
+            "path": "timeseries_labs",
+            "column": "Folate",
+            "is_struct": true,
+            "filter": "(pl.col('Folate').struct.field('value').is_not_null()) & (pl.col('Folate').struct.field('system').is_in(['Serum or Plasma']))"
+        },
+        "blood_amylase": {
+            "path": "timeseries_labs",
+            "column": "Amylase",
+            "is_struct": true,
+            "filter": "(pl.col('Amylase').struct.field('value').is_not_null()) & (pl.col('Amylase').struct.field('system').is_in(['Serum or Plasma']))"
+        },
+        "blood_ammonia": {
+            "path": "timeseries_labs",
+            "column": "Ammonia",
+            "is_struct": true,
+            "filter": "(pl.col('Ammonia').struct.field('value').is_not_null()) & (pl.col('Ammonia').struct.field('system').is_in(['Blood', 'Plasma']))"
+        },
+        "blood_osmolality": {
+            "path": "timeseries_labs",
+            "column": "Osmolality",
+            "is_struct": true,
+            "filter": "(pl.col('Osmolality').struct.field('value').is_not_null()) & (pl.col('Osmolality').struct.field('system').is_in(['Serum or Plasma']))"
+        },
+        "heart_rate": {
+            "path": "timeseries_vitals",
+            "column": "Heart rate",
+            "is_struct": false,
+            "filter": "pl.col('Heart rate').is_not_null()"
+        },
+        "temperature": {
+            "path": "timeseries_vitals",
+            "column": "Temperature",
+            "is_struct": false,
+            "filter": "pl.col('Temperature').is_not_null()"
+        },
+        "respiratory_rate": {
+            "path": "timeseries_vitals",
+            "column": "Respiratory rate",
+            "is_struct": false,
+            "filter": "pl.col('Respiratory rate').is_not_null()"
+        },
+        "oxygen_saturation": {
+            "path": "timeseries_vitals",
+            "column": "Peripheral oxygen saturation",
+            "is_struct": false,
+            "filter": "pl.col('Peripheral oxygen saturation').is_not_null()"
+        },
+        "systolic_bp_invasive": {
+            "path": "timeseries_vitals",
+            "column": "Invasive systolic arterial pressure",
+            "is_struct": false,
+            "filter": "pl.col('Invasive systolic arterial pressure').is_not_null()"
+        },
+        "systolic_bp_noninvasive": {
+            "path": "timeseries_vitals",
+            "column": "Non-invasive systolic arterial pressure",
+            "is_struct": false,
+            "filter": "pl.col('Non-invasive systolic arterial pressure').is_not_null()"
+        },
+        "diastolic_bp_invasive": {
+            "path": "timeseries_vitals",
+            "column": "Invasive diastolic arterial pressure",
+            "is_struct": false,
+            "filter": "pl.col('Invasive diastolic arterial pressure').is_not_null()"
+        },
+        "diastolic_bp_noninvasive": {
+            "path": "timeseries_vitals",
+            "column": "Non-invasive diastolic arterial pressure",
+            "is_struct": false,
+            "filter": "pl.col('Non-invasive diastolic arterial pressure').is_not_null()"
+        },
+        "mean_bp_invasive": {
+            "path": "timeseries_vitals",
+            "column": "Invasive mean arterial pressure",
+            "is_struct": false,
+            "filter": "pl.col('Invasive mean arterial pressure').is_not_null()"
+        },
+        "mean_bp_noninvasive": {
+            "path": "timeseries_vitals",
+            "column": "Non-invasive mean arterial pressure",
+            "is_struct": false,
+            "filter": "pl.col('Non-invasive mean arterial pressure').is_not_null()"
+        },
+        "gcs_total": {
+            "path": "timeseries_vitals",
+            "column": "Glasgow coma score total",
+            "is_struct": false,
+            "filter": "pl.col('Glasgow coma score total').is_not_null()"
+        },
+        "gcs_eye": {
+            "path": "timeseries_vitals",
+            "column": "Glasgow coma score eye opening",
+            "is_struct": false,
+            "filter": "pl.col('Glasgow coma score eye opening').is_not_null()"
+        },
+        "gcs_verbal": {
+            "path": "timeseries_vitals",
+            "column": "Glasgow coma score verbal",
+            "is_struct": false,
+            "filter": "pl.col('Glasgow coma score verbal').is_not_null()"
+        },
+        "gcs_motor": {
+            "path": "timeseries_vitals",
+            "column": "Glasgow coma score motor",
+            "is_struct": false,
+            "filter": "pl.col('Glasgow coma score motor').is_not_null()"
+        },
+        "cvp": {
+            "path": "timeseries_vitals",
+            "column": "Central venous pressure",
+            "is_struct": false,
+            "filter": "pl.col('Central venous pressure').is_not_null()"
+        },
+        "icp": {
+            "path": "timeseries_vitals",
+            "column": "Intracranial pressure",
+            "is_struct": false,
+            "filter": "pl.col('Intracranial pressure').is_not_null()"
+        },
+        "heart_rate_rhythm": {
+            "path": "timeseries_vitals",
+            "column": "Heart rate rhythm",
+            "is_struct": false,
+            "filter": "pl.col('Heart rate rhythm').is_not_null()"
+        },
+        "richmond_agitation_sedation_scale": {
+            "path": "timeseries_vitals",
+            "column": "Richmond Agitation-Sedation Scale",
+            "is_struct": false,
+            "filter": "pl.col('Richmond Agitation-Sedation Scale').is_not_null()"
+        },
+        "pain_scale": {
+            "path": "timeseries_vitals",
+            "column": "Numeric Pain Rating Scale",
+            "is_struct": false,
+            "filter": "pl.col('Numeric Pain Rating Scale').is_not_null()"
+        },
+        "systolic_bp_combined": {
+            "path": "timeseries_vitals",
+            "column": "combined_systolic_bp",
+            "is_struct": false,
+            "filter": "pl.col('combined_systolic_bp').is_not_null()",
+            "calculation": "pl.when(pl.col('Invasive systolic arterial pressure').is_not_null()).then(pl.col('Invasive systolic arterial pressure')).otherwise(pl.col('Non-invasive systolic arterial pressure'))"
+        },
+        "diastolic_bp_combined": {
+            "path": "timeseries_vitals",
+            "column": "combined_diastolic_bp",
+            "is_struct": false,
+            "filter": "pl.col('combined_diastolic_bp').is_not_null()",
+            "calculation": "pl.when(pl.col('Invasive diastolic arterial pressure').is_not_null()).then(pl.col('Invasive diastolic arterial pressure')).otherwise(pl.col('Non-invasive diastolic arterial pressure'))"
+        },
+        "mean_bp_combined": {
+            "path": "timeseries_vitals",
+            "column": "combined_mean_bp",
+            "is_struct": false,
+            "filter": "pl.col('combined_mean_bp').is_not_null()",
+            "calculation": "pl.when(pl.col('Invasive mean arterial pressure').is_not_null()).then(pl.col('Invasive mean arterial pressure')).otherwise(pl.col('Non-invasive mean arterial pressure'))"
+        },
+        "urine_output": {
+            "path": "timeseries_intakeoutput",
+            "column": "Urine output",
+            "is_struct": false,
+            "filter": "pl.col('Urine output').is_not_null()"
+        },
+        "urine_output_catheter": {
+            "path": "timeseries_intakeoutput",
+            "column": "Fluid output urine in and out urethral catheter",
+            "is_struct": false,
+            "filter": "pl.col('Fluid output urine in and out urethral catheter').is_not_null()"
+        },
+        "urine_output_nephrostomy": {
+            "path": "timeseries_intakeoutput",
+            "column": "Fluid output urine nephrostomy",
+            "is_struct": false,
+            "filter": "pl.col('Fluid output urine nephrostomy').is_not_null()"
+        },
+        "fluid_balance": {
+            "path": "timeseries_intakeoutput",
+            "column": "Fluid balance",
+            "is_struct": false,
+            "filter": "pl.col('Fluid balance').is_not_null()"
+        },
+        "fluid_intake_total": {
+            "path": "timeseries_intakeoutput",
+            "column": "Fluid intake",
+            "is_struct": false,
+            "filter": "pl.col('Fluid intake').is_not_null()"
+        },
+        "fluid_intake_iv": {
+            "path": "timeseries_intakeoutput",
+            "column": "Fluid intake intravascular",
+            "is_struct": false,
+            "filter": "pl.col('Fluid intake intravascular').is_not_null()"
+        },
+        "fluid_intake_oral": {
+            "path": "timeseries_intakeoutput",
+            "column": "Fluid intake oral",
+            "is_struct": false,
+            "filter": "pl.col('Fluid intake oral').is_not_null()"
+        },
+        "fluid_intake_enteral": {
+            "path": "timeseries_intakeoutput",
+            "column": "Fluid intake enteral tube",
+            "is_struct": false,
+            "filter": "pl.col('Fluid intake enteral tube').is_not_null()"
+        },
+        "fluid_intake_ng": {
+            "path": "timeseries_intakeoutput",
+            "column": "Fluid intake nasogastric tube",
+            "is_struct": false,
+            "filter": "pl.col('Fluid intake nasogastric tube').is_not_null()"
+        },
+        "fluid_intake_peritoneal": {
+            "path": "timeseries_intakeoutput",
+            "column": "Fluid intake peritoneal",
+            "is_struct": false,
+            "filter": "pl.col('Fluid intake peritoneal').is_not_null()"
+        },
+        "fluid_intake_bladder_irrigation": {
+            "path": "timeseries_intakeoutput",
+            "column": "Fluid intake urinary bladder irrigation",
+            "is_struct": false,
+            "filter": "pl.col('Fluid intake urinary bladder irrigation').is_not_null()"
+        },
+        "blood_loss": {
+            "path": "timeseries_intakeoutput",
+            "column": "Blood loss",
+            "is_struct": false,
+            "filter": "pl.col('Blood loss').is_not_null()"
+        },
+        "blood_loss_intraoperative": {
+            "path": "timeseries_intakeoutput",
+            "column": "Blood loss.total intraoperative",
+            "is_struct": false,
+            "filter": "pl.col('Blood loss.total intraoperative').is_not_null()"
+        },
+        "output_chest_tube": {
+            "path": "timeseries_intakeoutput",
+            "column": "Fluid output chest tube",
+            "is_struct": false,
+            "filter": "pl.col('Fluid output chest tube').is_not_null()"
+        },
+        "output_gastric": {
+            "path": "timeseries_intakeoutput",
+            "column": "Fluid output gastric tube",
+            "is_struct": false,
+            "filter": "pl.col('Fluid output gastric tube').is_not_null()"
+        },
+        "output_emesis": {
+            "path": "timeseries_intakeoutput",
+            "column": "Fluid output emesis",
+            "is_struct": false,
+            "filter": "pl.col('Fluid output emesis').is_not_null()"
+        },
+        "output_gi_drain": {
+            "path": "timeseries_intakeoutput",
+            "column": "Fluid output gastrointestinal drain",
+            "is_struct": false,
+            "filter": "pl.col('Fluid output gastrointestinal drain').is_not_null()"
+        },
+        "output_gi_ostomy": {
+            "path": "timeseries_intakeoutput",
+            "column": "Fluid output gastrointestinal ostomy",
+            "is_struct": false,
+            "filter": "pl.col('Fluid output gastrointestinal ostomy').is_not_null()"
+        },
+        "output_wound_drain": {
+            "path": "timeseries_intakeoutput",
+            "column": "Fluid output wound drain",
+            "is_struct": false,
+            "filter": "pl.col('Fluid output wound drain').is_not_null()"
+        },
+        "output_biliary_drain": {
+            "path": "timeseries_intakeoutput",
+            "column": "Fluid output biliary drain",
+            "is_struct": false,
+            "filter": "pl.col('Fluid output biliary drain').is_not_null()"
+        },
+        "output_peritoneal_drain": {
+            "path": "timeseries_intakeoutput",
+            "column": "Fluid output peritoneal drain",
+            "is_struct": false,
+            "filter": "pl.col('Fluid output peritoneal drain').is_not_null()"
+        },
+        "output_pericardial_drain": {
+            "path": "timeseries_intakeoutput",
+            "column": "Fluid output pericardial drain",
+            "is_struct": false,
+            "filter": "pl.col('Fluid output pericardial drain').is_not_null()"
+        },
+        "output_csf_drain": {
+            "path": "timeseries_intakeoutput",
+            "column": "Fluid output cerebral ventricle drain",
+            "is_struct": false,
+            "filter": "pl.col('Fluid output cerebral ventricle drain').is_not_null()"
+        },
+        "output_subarachnoid_drain": {
+            "path": "timeseries_intakeoutput",
+            "column": "Fluid output subarachnoid drain",
+            "is_struct": false,
+            "filter": "pl.col('Fluid output subarachnoid drain').is_not_null()"
+        },
+        "output_neuro_drain": {
+            "path": "timeseries_intakeoutput",
+            "column": "Fluid output neurological drain",
+            "is_struct": false,
+            "filter": "pl.col('Fluid output neurological drain').is_not_null()"
+        },
+        "output_colostomy": {
+            "path": "timeseries_intakeoutput",
+            "column": "Output.colostomy",
+            "is_struct": false,
+            "filter": "pl.col('Output.colostomy').is_not_null()"
+        },
+        "output_ileostomy": {
+            "path": "timeseries_intakeoutput",
+            "column": "Output.ileostomy",
+            "is_struct": false,
+            "filter": "pl.col('Output.ileostomy').is_not_null()"
+        },
+        "output_stool": {
+            "path": "timeseries_intakeoutput",
+            "column": "Output.stool",
+            "is_struct": false,
+            "filter": "pl.col('Output.stool').is_not_null()"
+        },
+        "output_miscellaneous": {
+            "path": "timeseries_intakeoutput",
+            "column": "Fluid output miscellaneous",
+            "is_struct": false,
+            "filter": "pl.col('Fluid output miscellaneous').is_not_null()"
+        },
+        "fio2": {
+            "path": "timeseries_respiratory",
+            "column": "Oxygen/Gas total [Pure volume fraction] Inhaled gas",
+            "is_struct": false,
+            "filter": "pl.col('Oxygen/Gas total [Pure volume fraction] Inhaled gas').is_not_null()"
+        },
+        "fio2_setting": {
+            "path": "timeseries_respiratory",
+            "column": "Oxygen/Total gas setting [Volume Fraction] Ventilator",
+            "is_struct": false,
+            "filter": "pl.col('Oxygen/Total gas setting [Volume Fraction] Ventilator').is_not_null()"
+        },
+        "peep": {
+            "path": "timeseries_respiratory",
+            "column": "PEEP Respiratory system",
+            "is_struct": false,
+            "filter": "pl.col('PEEP Respiratory system').is_not_null()"
+        },
+        "peep_setting": {
+            "path": "timeseries_respiratory",
+            "column": "Positive end expiratory pressure setting Ventilator",
+            "is_struct": false,
+            "filter": "pl.col('Positive end expiratory pressure setting Ventilator').is_not_null()"
+        },
+        "tidal_volume_expired": {
+            "path": "timeseries_respiratory",
+            "column": "Tidal volume.expired",
+            "is_struct": false,
+            "filter": "pl.col('Tidal volume.expired').is_not_null()"
+        },
+        "tidal_volume_inspired": {
+            "path": "timeseries_respiratory",
+            "column": "Tidal volume.inspired",
+            "is_struct": false,
+            "filter": "pl.col('Tidal volume.inspired').is_not_null()"
+        },
+        "tidal_volume_setting": {
+            "path": "timeseries_respiratory",
+            "column": "Tidal volume setting Ventilator",
+            "is_struct": false,
+            "filter": "pl.col('Tidal volume setting Ventilator').is_not_null()"
+        },
+        "tidal_volume_spontaneous": {
+            "path": "timeseries_respiratory",
+            "column": "Tidal volume.spontaneous --on ventilator",
+            "is_struct": false,
+            "filter": "pl.col('Tidal volume.spontaneous --on ventilator').is_not_null()"
+        },
+        "tidal_volume_spontaneous_mechanical": {
+            "path": "timeseries_respiratory",
+            "column": "Tidal volume.spontaneous+mechanical --on ventilator",
+            "is_struct": false,
+            "filter": "pl.col('Tidal volume.spontaneous+mechanical --on ventilator').is_not_null()"
+        },
+        "minute_volume": {
+            "path": "timeseries_respiratory",
+            "column": "Expired minute Volume during Mechanical ventilation",
+            "is_struct": false,
+            "filter": "pl.col('Expired minute Volume during Mechanical ventilation').is_not_null()"
+        },
+        "minute_volume_inspired": {
+            "path": "timeseries_respiratory",
+            "column": "Inspired minute Volume during Mechanical ventilation",
+            "is_struct": false,
+            "filter": "pl.col('Inspired minute Volume during Mechanical ventilation').is_not_null()"
+        },
+        "minute_volume_setting": {
+            "path": "timeseries_respiratory",
+            "column": "Minute volume setting Ventilator",
+            "is_struct": false,
+            "filter": "pl.col('Minute volume setting Ventilator').is_not_null()"
+        },
+        "ventilation_mode": {
+            "path": "timeseries_respiratory",
+            "column": "Ventilation mode Ventilator",
+            "is_struct": false,
+            "filter": "pl.col('Ventilation mode Ventilator').is_not_null()"
+        },
+        "ventilator_type": {
+            "path": "timeseries_respiratory",
+            "column": "Ventilator type",
+            "is_struct": false,
+            "filter": "pl.col('Ventilator type').is_not_null()"
+        },
+        "respiratory_rate_setting": {
+            "path": "timeseries_respiratory",
+            "column": "Breath rate setting Ventilator",
+            "is_struct": false,
+            "filter": "pl.col('Breath rate setting Ventilator').is_not_null()"
+        },
+        "respiratory_rate_spontaneous": {
+            "path": "timeseries_respiratory",
+            "column": "Breath rate spontaneous --on ventilator",
+            "is_struct": false,
+            "filter": "pl.col('Breath rate spontaneous --on ventilator').is_not_null()"
+        },
+        "respiratory_rate_total": {
+            "path": "timeseries_respiratory",
+            "column": "Breath rate spontaneous and mechanical --on ventilator",
+            "is_struct": false,
+            "filter": "pl.col('Breath rate spontaneous and mechanical --on ventilator').is_not_null()"
+        },
+        "mean_airway_pressure": {
+            "path": "timeseries_respiratory",
+            "column": "Mean airway pressure",
+            "is_struct": false,
+            "filter": "pl.col('Mean airway pressure').is_not_null()"
+        },
+        "peak_airway_pressure": {
+            "path": "timeseries_respiratory",
+            "column": "Pressure.max Respiratory system airway --on ventilator",
+            "is_struct": false,
+            "filter": "pl.col('Pressure.max Respiratory system airway --on ventilator').is_not_null()"
+        },
+        "plateau_pressure": {
+            "path": "timeseries_respiratory",
+            "column": "Pressure.plateau Respiratory system airway --on ventilator",
+            "is_struct": false,
+            "filter": "pl.col('Pressure.plateau Respiratory system airway --on ventilator').is_not_null()"
+        },
+        "pressure_support": {
+            "path": "timeseries_respiratory",
+            "column": "Pressure support setting Ventilator",
+            "is_struct": false,
+            "filter": "pl.col('Pressure support setting Ventilator').is_not_null()"
+        },
+        "driving_pressure": {
+            "path": "timeseries_respiratory",
+            "column": "Airway pressure delta setting Ventilator",
+            "is_struct": false,
+            "filter": "pl.col('Airway pressure delta setting Ventilator').is_not_null()"
+        },
+        "inspiratory_time": {
+            "path": "timeseries_respiratory",
+            "column": "Inspiratory time setting Ventilator",
+            "is_struct": false,
+            "filter": "pl.col('Inspiratory time setting Ventilator').is_not_null()"
+        },
+        "ie_ratio": {
+            "path": "timeseries_respiratory",
+            "column": "Inspiration/Expiration time Ratio",
+            "is_struct": false,
+            "filter": "pl.col('Inspiration/Expiration time Ratio').is_not_null()"
+        },
+        "inspiratory_flow": {
+            "path": "timeseries_respiratory",
+            "column": "Inspiratory flow setting Ventilator",
+            "is_struct": false,
+            "filter": "pl.col('Inspiratory flow setting Ventilator').is_not_null()"
+        },
+        "expiratory_hold_time": {
+            "path": "timeseries_respiratory",
+            "column": "Expiratory hold time setting Ventilator",
+            "is_struct": false,
+            "filter": "pl.col('Expiratory hold time setting Ventilator').is_not_null()"
+        },
+        "high_pressure_hold_time": {
+            "path": "timeseries_respiratory",
+            "column": "High pressure hold time setting Ventilator",
+            "is_struct": false,
+            "filter": "pl.col('High pressure hold time setting Ventilator').is_not_null()"
+        },
+        "low_pressure_hold_time": {
+            "path": "timeseries_respiratory",
+            "column": "Low pressure hold time setting Ventilator",
+            "is_struct": false,
+            "filter": "pl.col('Low pressure hold time setting Ventilator').is_not_null()"
+        },
+        "dynamic_lung_compliance": {
+            "path": "timeseries_respiratory",
+            "column": "Dynamic lung compliance",
+            "is_struct": false,
+            "filter": "pl.col('Dynamic lung compliance').is_not_null()"
+        },
+        "etco2": {
+            "path": "timeseries_respiratory",
+            "column": "Carbon dioxide [Partial pressure] in Exhaled gas --at end expiration",
+            "is_struct": false,
+            "filter": "pl.col('Carbon dioxide [Partial pressure] in Exhaled gas --at end expiration').is_not_null()"
+        },
+        "oxygen_delivery_system": {
+            "path": "timeseries_respiratory",
+            "column": "Oxygen delivery system",
+            "is_struct": false,
+            "filter": "pl.col('Oxygen delivery system').is_not_null()"
+        },
+        "oxygen_flow": {
+            "path": "timeseries_respiratory",
+            "column": "Oxygen gas flow Oxygen delivery system",
+            "is_struct": false,
+            "filter": "pl.col('Oxygen gas flow Oxygen delivery system').is_not_null()"
+        },
+        "apache_ii_score": {
+            "path": "PRECALCULATED_CONCEPTS/SCORES/APACHE2_worst_in_first_24h",
+            "dynamic": false,
+            "column": "APACHE-II Score",
+            "is_struct": false,
+            "filter": "pl.col('APACHE-II Score').is_not_null()"
+        },
+        "sofa_score": {
+            "path": "PRECALCULATED_CONCEPTS/SCORES/eSOFA_worst_in_first_24h",
+            "dynamic": false,
+            "column": "eSOFA Score",
+            "is_struct": false,
+            "filter": "pl.col('eSOFA Score').is_not_null()"
+        },
+        "saps_ii_score": {
+            "path": "PRECALCULATED_CONCEPTS/SCORES/SAPS2_worst_in_first_24h",
+            "dynamic": false,
+            "column": "SAPS-II Score",
+            "is_struct": false,
+            "filter": "pl.col('SAPS-II Score').is_not_null()"
+        },
+        "charlson_comorbidity_index": {
+            "path": "PRECALCULATED_CONCEPTS/CharlsonComorbidityIndex_QUAN_ICD10",
+            "dynamic": false,
+            "column": "Charlson Score",
+            "is_struct": false,
+            "filter": "pl.col('Charlson Score').is_not_null()"
+        },
+        "elixhauser_score": {
+            "path": "PRECALCULATED_CONCEPTS/ElixhauserComorbidityIndex_QUAN_VAN_WALRAVEN_ICD10",
+            "dynamic": false,
+            "column": "Elixhauser van Walraven Score",
+            "is_struct": false,
+            "filter": "pl.col('Elixhauser van Walraven Score').is_not_null()"
+        },
+        "spo2": {
+            "path": "timeseries_vitals",
+            "column": "Peripheral oxygen saturation",
+            "is_struct": false,
+            "filter": "pl.col('Peripheral oxygen saturation').is_not_null()"
+        },
+        "discharge_location": {
+            "path": "patient_information",
+            "dynamic": false,
+            "column": "Discharge Location",
+            "is_struct": false,
+            "filter": "pl.col('Discharge Location').is_not_null()"
+        },
+        "admission_type": {
+            "path": "patient_information",
+            "dynamic": false,
+            "column": "Admission Type",
+            "is_struct": false,
+            "filter": "pl.col('Admission Type').is_not_null()"
+        }
+    }
+}

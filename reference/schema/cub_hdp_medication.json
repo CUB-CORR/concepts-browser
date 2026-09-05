@@ -1,0 +1,22 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://corr.charite.de/corr-vars/src/cub_hdp/medication/schema.json",
+    "title": "CUB_HDP Medication Schema",
+    "description": "Auto-generated medication variable from the CUB HDP source. Derived from the drug mapping and not editable or versioned here.",
+    "type": "object",
+    "required": [
+        "type",
+        "drug"
+    ],
+    "additionalProperties": false,
+    "properties": {
+        "type": {
+            "description": "The type of the variable",
+            "const": "medication"
+        },
+        "drug": {
+            "type": "string",
+            "description": "The canonical drug name (optionally suffixed with a specific ingredient as 'drug:ingredient')"
+        }
+    }
+}

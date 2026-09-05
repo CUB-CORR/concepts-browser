@@ -1,0 +1,22 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://corr.charite.de/corr-vars/src/cub_hdp/laboratory/schema.json",
+    "title": "CUB_HDP Laboratory Schema",
+    "description": "Auto-generated laboratory variable from the CUB HDP source. Derived from the lab mapping and not editable or versioned here.",
+    "type": "object",
+    "required": [
+        "type",
+        "lab"
+    ],
+    "additionalProperties": false,
+    "properties": {
+        "type": {
+            "description": "The type of the variable",
+            "const": "laboratory"
+        },
+        "lab": {
+            "type": "string",
+            "description": "The canonical laboratory concept name"
+        }
+    }
+}

@@ -1,0 +1,47 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://corr.charite.de/corr-vars/src/reprodicu/native_static/schema.json",
+    "title": "reprodICU Native Static Schema",
+    "description": "A single per-stay value read straight out of a reprodICU table (admission metadata, a precalculated severity score). Upstream's vars.json carries no `type` key, so the importer derives one from the entry's shape: `calculation` present -> derived_*, absent -> native_*; `dynamic: false` -> *_static, `dynamic` absent or true -> *_dynamic. The four reprodicu schemas encode that same rule, so a definition can only ever validate against the type it would be assigned.",
+    "type": "object",
+    "required": [
+        "type",
+        "path",
+        "column",
+        "is_struct",
+        "filter",
+        "dynamic"
+    ],
+    "additionalProperties": false,
+    "properties": {
+        "type": {
+            "description": "The type of the variable",
+            "const": "native_static"
+        },
+        "path": {
+            "type": "string",
+            "description": "The reprodICU table the value is read from (e.g. `patient_information`, or a path under `PRECALCULATED_CONCEPTS/`)"
+        },
+        "column": {
+            "type": "string",
+            "description": "The column of `path` holding this variable's value"
+        },
+        "is_struct": {
+            "type": "boolean",
+            "description": "Whether the column is a polars struct (value + metadata) rather than a plain value; the filter then addresses its fields with `.struct.field(...)`"
+        },
+        "filter": {
+            "type": "string",
+            "description": "Polars predicate selecting this variable's rows, as an expression over `pl`"
+        },
+        "dynamic": {
+            "description": "What makes this variable static: one value per stay rather than a time series",
+            "const": false
+        },
+        "unit": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Unit of the extracted value, folded in from the source's units.json at import. Absent for dimensionless variables (scores, flags, categories)"
+        }
+    }
+}

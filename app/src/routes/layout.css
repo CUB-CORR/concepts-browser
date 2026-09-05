@@ -1,0 +1,148 @@
+@import 'tailwindcss';
+@import "tw-animate-css";
+@import "shadcn-svelte/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
+
+/* Default palette (Charité-inspired blues/greys), converted to OKLCH:
+   white #ffffff · light grey #cbcfd2 · blue #004d9b · dark grey #7e898f
+   text grey #5e676c · black #000000 · light blue #007bc3 · dark blue #002552
+   coral #ea5451 (used sparingly, mapped to destructive). */
+:root {
+	--background: oklch(1 0 0); /* Weiß */
+	--foreground: oklch(0.0000 0.0000 0.00); /* Textschwarz */
+	--card: oklch(1 0 0);
+	--card-foreground: oklch(0.0000 0.0000 0.00);
+	--popover: oklch(1 0 0);
+	--popover-foreground: oklch(0.0000 0.0000 0.00);
+	--primary: oklch(0.4283 0.1431 255.41); /* Charité-Blau */
+	--primary-foreground: oklch(1 0 0);
+	--secondary: oklch(0.9542 0.0034 247.86); /* helles Grau */
+	--secondary-foreground: oklch(0.4283 0.1431 255.41);
+	--muted: oklch(0.9542 0.0034 247.86);
+	--muted-foreground: oklch(0.5078 0.0136 231.88); /* Textgrau */
+	--accent: oklch(0.9454 0.0138 247.97); /* helles Blau */
+	--accent-foreground: oklch(0.4283 0.1431 255.41);
+	--destructive: oklch(0.6473 0.1862 24.96); /* Korall */
+	--border: oklch(0.8523 0.0061 239.83); /* Hellgrau */
+	--input: oklch(0.8523 0.0061 239.83);
+	--ring: oklch(0.4283 0.1431 255.41); /* Charité-Blau */
+	--chart-1: oklch(0.4283 0.1431 255.41); /* Blau */
+	--chart-2: oklch(0.5638 0.1427 245.28); /* Hellblau */
+	--chart-3: oklch(0.2707 0.0920 255.88); /* Dunkelblau */
+	--chart-4: oklch(0.6230 0.0158 231.36); /* Dunkelgrau */
+	--chart-5: oklch(0.6473 0.1862 24.96); /* Korall */
+	--radius: 0.625rem;
+	--sidebar: oklch(0.9542 0.0034 247.86);
+	--sidebar-foreground: oklch(0.0000 0.0000 0.00);
+	--sidebar-primary: oklch(0.4283 0.1431 255.41);
+	--sidebar-primary-foreground: oklch(1 0 0);
+	--sidebar-accent: oklch(0.9454 0.0138 247.97);
+	--sidebar-accent-foreground: oklch(0.4283 0.1431 255.41);
+	--sidebar-border: oklch(0.8523 0.0061 239.83);
+	--sidebar-ring: oklch(0.4283 0.1431 255.41);
+}
+
+.dark {
+	--background: oklch(0.1749 0.0469 250.66); /* sehr dunkles Blau */
+	--foreground: oklch(0.9542 0.0034 247.86);
+	--card: oklch(0.2707 0.0920 255.88); /* Dunkelblau */
+	--card-foreground: oklch(0.9542 0.0034 247.86);
+	--popover: oklch(0.2707 0.0920 255.88);
+	--popover-foreground: oklch(0.9542 0.0034 247.86);
+	--primary: oklch(0.5638 0.1427 245.28); /* Hellblau — trägt besser auf Dunkel */
+	--primary-foreground: oklch(1 0 0);
+	--secondary: oklch(0.2931 0.0807 254.67);
+	--secondary-foreground: oklch(0.9542 0.0034 247.86);
+	--muted: oklch(0.2931 0.0807 254.67);
+	--muted-foreground: oklch(0.8523 0.0061 239.83); /* Hellgrau */
+	--accent: oklch(0.3520 0.0949 254.83);
+	--accent-foreground: oklch(0.9542 0.0034 247.86);
+	--destructive: oklch(0.6473 0.1862 24.96); /* Korall */
+	--border: oklch(1 0 0 / 12%);
+	--input: oklch(1 0 0 / 15%);
+	--ring: oklch(0.5638 0.1427 245.28); /* Hellblau */
+	--chart-1: oklch(0.5638 0.1427 245.28); /* Hellblau */
+	--chart-2: oklch(0.4283 0.1431 255.41); /* Blau */
+	--chart-3: oklch(0.8523 0.0061 239.83); /* Hellgrau */
+	--chart-4: oklch(0.6230 0.0158 231.36); /* Dunkelgrau */
+	--chart-5: oklch(0.6473 0.1862 24.96); /* Korall */
+	--sidebar: oklch(0.2707 0.0920 255.88);
+	--sidebar-foreground: oklch(0.9542 0.0034 247.86);
+	--sidebar-primary: oklch(0.5638 0.1427 245.28);
+	--sidebar-primary-foreground: oklch(1 0 0);
+	--sidebar-accent: oklch(0.3520 0.0949 254.83);
+	--sidebar-accent-foreground: oklch(0.9542 0.0034 247.86);
+	--sidebar-border: oklch(1 0 0 / 12%);
+	--sidebar-ring: oklch(0.5638 0.1427 245.28);
+}
+
+@theme inline {
+	/* The Brand families come from the swappable overlay stylesheet (static/brand/brand.css),
+	   loaded via app.html — replace that directory at deploy time to change typefaces. */
+	--font-sans: 'Brand Text', ui-sans-serif, system-ui, sans-serif;
+	--font-heading: 'Brand Headline', 'Brand Text', ui-sans-serif, sans-serif;
+	--font-condensed: 'Brand Condensed', ui-sans-serif, sans-serif;
+
+	/* Tertiary accents. Base color + readable text shades for light/dark; use with
+	   opacity for 20%-step tints. */
+	--color-accent-green: #008939;
+	--color-accent-green-fg: #005222; /* dark text on light tint */
+	--color-accent-green-fg-dark: #8ccaa6; /* light text on dark tint */
+	--color-accent-mango: #fab600;
+	--color-accent-mango-fg: #966d00;
+	--color-accent-mango-fg-dark: #fdde8c;
+	--color-sidebar-ring: var(--sidebar-ring);
+	--color-sidebar-border: var(--sidebar-border);
+	--color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+	--color-sidebar-accent: var(--sidebar-accent);
+	--color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+	--color-sidebar-primary: var(--sidebar-primary);
+	--color-sidebar-foreground: var(--sidebar-foreground);
+	--color-sidebar: var(--sidebar);
+	--color-chart-5: var(--chart-5);
+	--color-chart-4: var(--chart-4);
+	--color-chart-3: var(--chart-3);
+	--color-chart-2: var(--chart-2);
+	--color-chart-1: var(--chart-1);
+	--color-ring: var(--ring);
+	--color-input: var(--input);
+	--color-border: var(--border);
+	--color-destructive: var(--destructive);
+	--color-accent-foreground: var(--accent-foreground);
+	--color-accent: var(--accent);
+	--color-muted-foreground: var(--muted-foreground);
+	--color-muted: var(--muted);
+	--color-secondary-foreground: var(--secondary-foreground);
+	--color-secondary: var(--secondary);
+	--color-primary-foreground: var(--primary-foreground);
+	--color-primary: var(--primary);
+	--color-popover-foreground: var(--popover-foreground);
+	--color-popover: var(--popover);
+	--color-card-foreground: var(--card-foreground);
+	--color-card: var(--card);
+	--color-foreground: var(--foreground);
+	--color-background: var(--background);
+	--radius-sm: calc(var(--radius) * 0.6);
+	--radius-md: calc(var(--radius) * 0.8);
+	--radius-lg: var(--radius);
+	--radius-xl: calc(var(--radius) * 1.4);
+	--radius-2xl: calc(var(--radius) * 1.8);
+	--radius-3xl: calc(var(--radius) * 2.2);
+	--radius-4xl: calc(var(--radius) * 2.6);
+}
+
+@layer base {
+	* {
+		@apply border-border outline-ring/50;
+	}
+	body {
+		@apply bg-background text-foreground;
+	}
+	html {
+		@apply font-sans;
+	}
+	h1, h2, h3, h4, h5, h6 {
+		font-family: var(--font-heading);
+	}
+}

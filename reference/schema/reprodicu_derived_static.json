@@ -1,0 +1,53 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://corr.charite.de/corr-vars/src/reprodicu/derived_static/schema.json",
+    "title": "reprodICU Derived Static Schema",
+    "description": "A single per-stay value computed from other columns of a reprodICU table. No variable upstream has this shape today; the type exists because the derivation rule is a cross product and a definition that combines `calculation` with `dynamic: false` must have somewhere valid to land. Upstream's vars.json carries no `type` key, so the importer derives one from the entry's shape: `calculation` present -> derived_*, absent -> native_*; `dynamic: false` -> *_static, `dynamic` absent or true -> *_dynamic. The four reprodicu schemas encode that same rule, so a definition can only ever validate against the type it would be assigned.",
+    "type": "object",
+    "required": [
+        "type",
+        "path",
+        "column",
+        "is_struct",
+        "filter",
+        "calculation",
+        "dynamic"
+    ],
+    "additionalProperties": false,
+    "properties": {
+        "type": {
+            "description": "The type of the variable",
+            "const": "derived_static"
+        },
+        "path": {
+            "type": "string",
+            "description": "The reprodICU table the inputs of `calculation` are read from"
+        },
+        "column": {
+            "type": "string",
+            "description": "Name the computed column is materialised under, and the one `filter` addresses"
+        },
+        "is_struct": {
+            "type": "boolean",
+            "description": "Whether the computed column is a polars struct rather than a plain value; the filter then addresses its fields with `.struct.field(...)`"
+        },
+        "filter": {
+            "type": "string",
+            "description": "Polars predicate selecting this variable's rows, as an expression over `pl`"
+        },
+        "calculation": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Polars expression computing `column` from other columns of `path`. Its presence is what makes the variable derived rather than native"
+        },
+        "dynamic": {
+            "description": "What makes this variable static: one value per stay rather than a time series",
+            "const": false
+        },
+        "unit": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Unit of the computed value, folded in from the source's units.json at import. Absent for dimensionless variables (scores, flags, categories)"
+        }
+    }
+}

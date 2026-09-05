@@ -1,0 +1,202 @@
+{
+  "blood_alt": {
+    "LOINC": [
+      "1742-6"
+    ],
+    "SNOMED": [
+      "34608000"
+    ]
+  },
+  "blood_ast": {
+    "LOINC": [
+      "1920-8"
+    ],
+    "SNOMED": [
+      "45896001"
+    ]
+  },
+  "blood_calcium_ionized": {
+    "LOINC": [
+      "1994-3"
+    ],
+    "SNOMED": [
+      "55681000237100"
+    ]
+  },
+  "blood_chloride": {
+    "LOINC": [
+      "77138-6"
+    ],
+    "SNOMED": [
+      "56731000237103"
+    ]
+  },
+  "blood_creatinine": {
+    "LOINC": [
+      "2160-0"
+    ],
+    "SNOMED": [
+      "70901006"
+    ]
+  },
+  "blood_crp": {
+    "LOINC": [
+      "1988-5"
+    ],
+    "SNOMED": [
+      "55235003"
+    ]
+  },
+  "blood_ferritin": {
+    "LOINC": [
+      "2276-4"
+    ],
+    "SNOMED": [
+      "489004"
+    ]
+  },
+  "blood_fibrinogen": {
+    "LOINC": [
+      "3255-7"
+    ],
+    "SNOMED": [
+      "1108621000000108"
+    ]
+  },
+  "blood_glucose": {
+    "LOINC": [
+      "74774-1"
+    ],
+    "SNOMED": [
+      "33747003"
+    ]
+  },
+  "blood_hematocrit": {
+    "LOINC": [
+      "4544-3"
+    ],
+    "SNOMED": [
+      "1111571000000101"
+    ]
+  },
+  "blood_hemoglobin": {
+    "LOINC": [
+      "718-7"
+    ],
+    "SNOMED": [
+      "1107511000000100"
+    ]
+  },
+  "blood_inr": {
+    "LOINC": [
+      "6301-6"
+    ],
+    "SNOMED": [
+      "165581004"
+    ]
+  },
+  "blood_lactate": {
+    "LOINC": [
+      "14118-4"
+    ],
+    "SNOMED": [
+      "372461000119109"
+    ]
+  },
+  "blood_magnesium": {
+    "LOINC": [
+      "2601-3"
+    ],
+    "SNOMED": [
+      "63571001"
+    ]
+  },
+  "blood_ph": {
+    "LOINC": [
+      "11558-4"
+    ],
+    "SNOMED": [
+      "27327002"
+    ]
+  },
+  "blood_phosphate": {
+    "LOINC": [
+      "14879-1"
+    ],
+    "SNOMED": [
+      "271241002"
+    ]
+  },
+  "blood_platelets": {
+    "LOINC": [
+      "26515-7"
+    ],
+    "SNOMED": [
+      "1108041000000107"
+    ]
+  },
+  "blood_potassium": {
+    "LOINC": [
+      "2823-3"
+    ],
+    "SNOMED": [
+      "312468003"
+    ]
+  },
+  "blood_sodium": {
+    "LOINC": [
+      "2951-2"
+    ],
+    "SNOMED": [
+      "25197003"
+    ]
+  },
+  "blood_triglyceride": {
+    "LOINC": [
+      "2571-8"
+    ],
+    "SNOMED": [
+      "14740000"
+    ]
+  },
+  "blood_urea_nitrogen": {
+    "LOINC": [
+      "3094-0"
+    ],
+    "SNOMED": [
+      "105011006"
+    ]
+  },
+  "fluid_balance": {
+    "LOINC": [
+      "9097-7"
+    ],
+    "SNOMED": [
+      "364396009"
+    ]
+  },
+  "icp": {
+    "LOINC": [
+      "60956-0"
+    ],
+    "SNOMED": [
+      "250844005"
+    ]
+  },
+  "spo2": {
+    "LOINC": [
+      "59408-5"
+    ],
+    "SNOMED": [
+      "431314004"
+    ]
+  },
+  "urine_output": {
+    "LOINC": [
+      "9187-6"
+    ],
+    "SNOMED": [
+      "993701000000102"
+    ]
+  }
+}

@@ -1,0 +1,74 @@
+# Build the three service images and publish them to GHCR:
+#   ghcr.io/cub-corr/concepts-browser/api    — FastAPI backend
+#   ghcr.io/cub-corr/concepts-browser/app    — SvelteKit frontend
+#   ghcr.io/cub-corr/concepts-browser/sync   — vars-sync sidecar
+#
+# Pushes to main publish `latest` (+ a `sha-…` tag); version tags (v1.2.3) publish semver
+# tags. Pull requests build without pushing, as a smoke check. Deployments are expected to
+# pull these images and customize entirely at runtime (env + /brand bind-mount) — see the
+# Branding section of the README.
+name: docker
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - image: api
+            context: .
+            dockerfile: Dockerfile
+          - image: app
+            context: ./app
+            dockerfile: app/Dockerfile
+          - image: sync
+            context: ./sync
+            dockerfile: sync/Dockerfile
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: docker/setup-buildx-action@v4
+
+      - uses: docker/login-action@v4
+        if: github.event_name != 'pull_request'
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - id: meta
+        uses: docker/metadata-action@v6
+        with:
+          # metadata-action lowercases the repository name for us.
+          images: ghcr.io/${{ github.repository }}/${{ matrix.image }}
+          tags: |
+            type=raw,value=latest,enable={{is_default_branch}}
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=sha
+
+      - uses: docker/build-push-action@v7
+        with:
+          context: ${{ matrix.context }}
+          file: ${{ matrix.dockerfile }}
+          # x86 deployment hosts only — no multi-arch.
+          platforms: linux/amd64
+          push: ${{ github.event_name != 'pull_request' }}
+          # Baked into the app image so its footer shows which release is live; the api and
+          # sync Dockerfiles declare no such ARG and ignore it.
+          build-args: |
+            PUBLIC_BUILD_COMMIT=${{ github.sha }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha,scope=${{ matrix.image }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.image }}

@@ -1,0 +1,35 @@
+# Reference data seeded into the database on first run.
+#
+# Rows are inserted only if absent (matched by `key` for sources/taxonomies, `name` for
+# concepts), so this file is safe to re-run and you can add new entries later — they'll
+# appear on the next boot without touching existing rows.
+#
+# NOTE: the bootstrap admin user is intentionally NOT here. It is created from the
+# BOOTSTRAP_ADMIN_* environment variables so credentials stay out of source control.
+#
+# `supported_types` is NOT listed per source: it is derived from the schema folder
+# (settings.schema_dir) — drop a `<source>/<type>/schema.json` in there and the type
+# appears automatically.
+
+sources:
+  - key: cub_hdp
+    nicename: "CUB HDP (Impala / Copra 6)"
+  - key: reprodicu
+    nicename: "reprodICU"
+
+taxonomies:
+  - key: "corr_v1"
+    name: "CORR (v1)"
+  - key: ICD10
+    name: "ICD-10"
+  - key: ATC
+    name: "ATC"
+  - key: LOINC
+    name: "LOINC"
+  - key: OMOP
+    name: "OMOP concept_id"
+  - key: SNOMED
+    name: "SNOMED CT"
+
+# Pre-defined concepts (optional). Drafts/configs are authored via the API, not seeded.
+concepts: []
