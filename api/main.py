@@ -27,6 +27,7 @@ from .routers import (
     deprecation,
     files,
     internal,
+    notifications,
     pointers,
     projects,
     reference,
@@ -941,6 +942,7 @@ def public_docs():
 
 app.include_router(auth.router)
 app.include_router(admin.router)
+app.include_router(notifications.router)  # admin broadcasts: package release notes
 app.include_router(audit_log.router)
 app.include_router(api_keys.router)
 app.include_router(projects.router)

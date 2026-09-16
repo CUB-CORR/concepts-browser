@@ -9,6 +9,7 @@ dependencies = [
     "httpx>=0.28.1",
     "jsonschema>=4.26.0",
     "ldap3>=2.9.1",
+    "markdown-it-py[linkify]>=4.0.0",
     "openpyxl>=3.1.5",
     "polars>=1.42.1",
     "pydantic>=2.13.4",

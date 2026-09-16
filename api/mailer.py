@@ -18,6 +18,7 @@ Every attempt — sent, failed, or never tried — lands in the audit log as an 
 """
 import logging
 import threading
+from html import escape
 from urllib.parse import quote
 
 from exchangelib import (
@@ -36,7 +37,7 @@ from exchangelib.protocol import BaseProtocol
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from . import audit, usage
+from . import audit, release_notes, usage
 from .config import settings
 from .db import SessionLocal
 from .models import (
@@ -60,6 +61,7 @@ _AUTH_TYPES = {"ntlm": NTLM, "basic": BASIC, "digest": DIGEST}
 # opposed to its subject line, which is prose.
 EMAIL_KIND_APPROVAL = "approval"
 EMAIL_KIND_PUBLISH_ALERT = "publish_alert"
+EMAIL_KIND_RELEASE_NOTE = "release_note"
 
 
 def _attr(profile: dict | None, name: str) -> str | None:
@@ -499,3 +501,149 @@ def notify_concept_published(
         )
         for user in recipients
     )
+
+
+def release_note_subject(package: str, version: str) -> str:
+    return f"{settings.app_display_name} — {package} {version} released"
+
+
+def release_note_recipients(db: Session) -> list[User]:
+    """Who a release note goes to. There are no subscriptions yet, so: every active user who
+    has been approved (holds any capability). A pending account has not been let in, and is
+    not told about releases of a package it cannot use against us either.
+
+    The one place a subscription check would go.
+    """
+    users = db.scalars(select(User).where(User.is_active.is_(True)).order_by(User.id))
+    return [user for user in users if user.capabilities]
+
+
+def render_release_note_email(
+    user: User,
+    *,
+    package: str,
+    version: str,
+    notes: str,
+    release_url: str | None = None,
+    repository: str | None = None,
+) -> tuple[str, str]:
+    """The release note's text and HTML bodies. `notes` is the release's Markdown; the text
+    body carries it as written, which is what Markdown is for, and the HTML body renders it
+    (see `api/release_notes.py`)."""
+    app = settings.app_display_name
+    contact = settings.contact_email
+    name = greeting_name(user)
+
+    url_text = f"\nThe full release: {release_url}\n" if release_url else ""
+    contact_text = f"\nQuestions? Please reach out at {contact}\n" if contact else ""
+    text_body = f"""\
+Dear {name}!
+
+{package} {version} has been released. The release notes:
+
+{notes.strip()}
+{url_text}{contact_text}
+Best regards,
+The {app} team
+"""
+
+    label = f"<strong>{escape(package)} {escape(version)}</strong>"
+    if release_url:
+        label = f'<a href="{escape(release_url)}" style="color: #0969da;">{label}</a>'
+    contact_html = (
+        f'<p style="margin: 16px 0 0;">Questions? Please reach out at '
+        f'<a href="mailto:{escape(contact)}">{escape(contact)}</a></p>\n'
+        if contact
+        else ""
+    )
+    html_body = release_notes.email_html(
+        greeting=f"Dear {escape(name)}!",
+        lead_html=f"{label} has been released. The release notes:",
+        notes_html=release_notes.render_markdown(notes, repository=repository),
+        footer_html=f"{contact_html}<p style=\"margin: 16px 0 0;\">Best regards,<br>The {escape(app)} team</p>",
+    )
+    return text_body, html_body
+
+
+def send_release_note_email(
+    user: User,
+    *,
+    package: str,
+    version: str,
+    notes: str,
+    release_url: str | None = None,
+    repository: str | None = None,
+) -> bool:
+    """Send one user the notes of a package release."""
+    subject = release_note_subject(package, version)
+    detail = {"package": package, "version": version, "release_url": release_url}
+
+    to = recipient_for(user)
+    if not to:
+        log.warning("no LDAP mail address for user %r; skipping release note", user.username)
+        audit.record_email(
+            user_id=user.id,
+            kind=EMAIL_KIND_RELEASE_NOTE,
+            subject=subject,
+            status=EMAIL_SKIPPED,
+            detail={**detail, "reason": "no_ldap_mail_address", "username": user.username},
+        )
+        return False
+
+    text_body, html_body = render_release_note_email(
+        user,
+        package=package,
+        version=version,
+        notes=notes,
+        release_url=release_url,
+        repository=repository,
+    )
+    status, reason = _send(to, subject, text_body, html_body)
+    audit.record_email(
+        user_id=user.id,
+        kind=EMAIL_KIND_RELEASE_NOTE,
+        to=to,
+        subject=subject,
+        status=status,
+        detail={**detail, **({"reason": reason} if reason else {})},
+    )
+    return status == EMAIL_SENT
+
+
+def notify_release(
+    *,
+    user_ids: list[int],
+    package: str,
+    version: str,
+    notes: str,
+    release_url: str | None = None,
+    repository: str | None = None,
+) -> int:
+    """Send the release note to each of `user_ids`. Returns how many messages went out.
+
+    A background task, like `notify_concept_published`: the recipients were chosen by the
+    request, and are reloaded here in a session of our own, so a failure never reaches it.
+    One message at a time — EWS sends are sequential through the shared session anyway.
+    """
+    try:
+        with SessionLocal() as db:
+            users = list(db.scalars(select(User).where(User.id.in_(user_ids)).order_by(User.id)))
+            for user in users:
+                db.expunge(user)
+    except Exception:  # noqa: BLE001 — see the module docstring
+        log.exception("failed to load release-note recipients for %s %s", package, version)
+        return 0
+
+    sent = sum(
+        send_release_note_email(
+            user,
+            package=package,
+            version=version,
+            notes=notes,
+            release_url=release_url,
+            repository=repository,
+        )
+        for user in users
+    )
+    log.info("release note %s %s: %d of %d sent", package, version, sent, len(users))
+    return sent
