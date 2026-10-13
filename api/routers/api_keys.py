@@ -49,14 +49,12 @@ def create_key(
                 status.HTTP_400_BAD_REQUEST, f"Scopes exceed your capabilities: {excess}"
             )
         scopes = sorted(requested)
+        pinned = True
     else:
-        # Non-admins can't scope keys: a key only ever reads. It reads as far as its owner
-        # can, though — a key stuck at `can_read` while its owner may read code would 403 on
-        # every snippet fetch, which is precisely what corr-vars mints keys for. One scope is
-        # enough to say that: `can_read_detail` entails `can_read` (see the chain in
-        # `api/security.py`), and it is entailed in turn by `can_edit` and up.
-        detail = has_capability(user, security.CAN_READ_DETAIL)
-        scopes = [security.CAN_READ_DETAIL if detail else security.CAN_READ]
+        # Non-admins can't scope keys: a key only ever reads, as far as its owner can. It is
+        # left unpinned so a later promotion raises it too (see `admin.update_user`).
+        scopes = security.default_key_scopes(user.capabilities)
+        pinned = False
 
     plaintext, key_hash, key_prefix = security.generate_api_key()
     expires_at = (
@@ -70,6 +68,7 @@ def create_key(
         key_hash=key_hash,
         key_prefix=key_prefix,
         scopes=scopes,
+        scopes_pinned=pinned,
         expires_at=expires_at,
     )
     db.add(key)

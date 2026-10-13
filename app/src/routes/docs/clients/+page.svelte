@@ -81,9 +81,13 @@ curl -s -D- "$API/concept/corr_v1/any_dialysis?project=my-project" \\
 			</Alert.Description>
 		</Alert.Root>
 		<p>
-			<strong>Scopes.</strong> An ordinary key is read-only. Only an administrator can mint a key with
-			wider scopes, and <code>create_api_key</code> is never itself a scope — a key can never mint further
-			keys. Revoking a key takes effect immediately: the next request using it is rejected.
+			<strong>Scopes.</strong> An ordinary key is read-only, reading as far as you may:
+			<code>can_read_detail</code> if you hold it, <code>can_read</code> otherwise. If an administrator
+			later promotes you, your existing keys are raised along with you — no need to mint new ones.
+			Only an administrator can mint a key with wider scopes or change an existing key's scopes, and
+			<code>create_api_key</code> is never itself a scope — a key can never mint further keys. Revoking
+			a key takes effect immediately: the next request using it is rejected. Administrators can see
+			and revoke your keys too.
 		</p>
 		<p>
 			What a key may actually do is recomputed on every request, from both sides of the

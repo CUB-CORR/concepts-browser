@@ -584,6 +584,15 @@ class AdminUserUpdate(BaseModel):
     _known_caps = field_validator("capabilities")(_validate_capabilities)
 
 
+class AdminApiKeyUpdate(BaseModel):
+    """An admin re-scoping someone's key. A list pins the key to exactly those scopes (bounded by
+    the owner's capabilities, never `create_api_key`); null hands it back to the owner default,
+    which then follows their promotions again. Required, so an empty body is not a reset."""
+    scopes: list[str] | None
+
+    _known_caps = field_validator("scopes")(_validate_capabilities)
+
+
 class DirectoryEntry(BaseModel):
     """One person from an admin directory search (`GET /admin/directory`), for proactive
     provisioning. `user_id` is set when this person is already in our DB (keyed on the stable
@@ -615,6 +624,8 @@ class ApiKeyOut(BaseModel):
     expires_at: datetime | None = None
     revoked: bool = False
     last_used_at: datetime | None = None
+    # False ⇒ the scopes are the owner default and follow a promotion; True ⇒ an admin set them.
+    scopes_pinned: bool = False
 
 
 class ApiKeyCreated(ApiKeyOut):

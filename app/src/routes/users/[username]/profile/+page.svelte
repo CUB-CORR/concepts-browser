@@ -5,6 +5,7 @@
 	import MailIcon from "@lucide/svelte/icons/mail";
 	import ChevronRightIcon from "@lucide/svelte/icons/chevron-right";
 	import UsageTable from "$lib/components/UsageTable.svelte";
+	import AdminApiKeys from "$lib/components/AdminApiKeys.svelte";
 	import { CAPABILITY_CHAIN, can, hasCapability } from "$lib/caps";
 	import { brand } from "$lib/brand";
 	import { formatTimestamp } from "$lib/format";
@@ -143,6 +144,19 @@
 					{data.isSelf ? "You have" : "This user has"} not read any concept yet.
 				</p>
 			{/if}
+		</section>
+	{/if}
+
+	<!-- API keys: admins only (the loader leaves this null for anyone else) -->
+	{#if data.apiKeys}
+		<section class="flex flex-col gap-3">
+			<h2 class="text-sm font-semibold tracking-tight">API keys</h2>
+			<AdminApiKeys
+				keys={data.apiKeys}
+				userId={profile.id}
+				ownerCapabilities={profile.capabilities}
+				labels={CAP_LABELS}
+			/>
 		</section>
 	{/if}
 

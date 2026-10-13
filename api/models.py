@@ -151,6 +151,10 @@ class ApiKey(Base):
     key_prefix: Mapped[str] = mapped_column(String(16))
     # Subset of the owner's capabilities this key may exercise (validated ⊆ owner at creation).
     scopes: Mapped[list] = mapped_column(JSON, default=list)
+    # True when an admin chose the scopes (at minting or later, from the owner's profile). An
+    # unpinned key carries the owner default (`security.default_key_scopes`) and is raised with
+    # it when the owner is promoted; a pinned one is left exactly as the admin set it.
+    scopes_pinned: Mapped[bool] = mapped_column(Boolean, default=False)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=_utcnow)
     expires_at: Mapped[datetime | None] = mapped_column(DateTime)
     revoked: Mapped[bool] = mapped_column(Boolean, default=False)

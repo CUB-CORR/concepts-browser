@@ -64,6 +64,26 @@ def expand_capabilities(caps) -> set[str]:
     return caps | set(CAPABILITY_CHAIN[: highest + 1])
 
 
+def default_key_scopes(owner_caps) -> list[str]:
+    """The scopes a key gets when nobody chose them: read-only, but reading as far as the owner
+    can. A key stuck at `can_read` while its owner may read code would 403 on every snippet
+    fetch, which is precisely what corr-vars mints keys for."""
+    if CAN_READ_DETAIL in expand_capabilities(owner_caps):
+        return [CAN_READ_DETAIL]
+    return [CAN_READ]
+
+
+def raised_key_scopes(scopes, owner_caps) -> list[str] | None:
+    """The new scopes for an unpinned key whose owner now reads further than it does, or None
+    when it already covers the owner default. Only ever raises: a demotion narrows the key
+    live (`deps._authenticate_api_key` intersects with the owner), so the stored scope can stay
+    and is simply in force again after a re-promotion."""
+    default = default_key_scopes(owner_caps)
+    if set(default) <= expand_capabilities(scopes):
+        return None
+    return default
+
+
 # API keys are presented as bearer tokens; this prefix lets `deps` tell a key from a JWT.
 API_KEY_PREFIX = "cak_"
 

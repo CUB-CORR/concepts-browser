@@ -230,5 +230,18 @@
 				>Connecting clients</a
 			>.
 		</p>
+		<p>
+			A key an ordinary user mints reads as far as they can: <code>can_read_detail</code> when they
+			hold it, <code>can_read</code> otherwise. Promoting the user raises those keys with them — a
+			reader promoted to read code does not have to mint a new key before corr-vars works.
+		</p>
+		<p>
+			Every user's keys are listed on their profile page (reached from the user management table),
+			with when each was last used. From there you can <strong>revoke</strong> a key, or change its
+			<strong>scopes</strong> in place, so its holder keeps the same secret. Choosing scopes pins
+			the key: a later promotion leaves it exactly as you set it. <em>Reset to default</em> unpins it
+			and makes it follow its owner again. Keys you mint for yourself with chosen scopes are pinned
+			the same way. A key's scopes can never exceed its owner's capabilities.
+		</p>
 	</DocSection>
 </DocPage>

@@ -151,6 +151,70 @@ with TestClient(app) as client:
         params={"project": "internal"},
     ).status_code == 401
 
+    # --- admins see and manage another user's keys -----------------------------------------
+    with SessionLocal() as db:
+        reader_id = db.scalar(select(User.id).where(User.username == "reader"))
+    keys_url = f"/admin/users/{reader_id}/api-keys"
+    assert client.get(keys_url, headers=reader_h).status_code == 403
+    listed = client.get(keys_url, headers=admin_h).json()
+    assert {k["name"] for k in listed} == {"ci", "forced", "stale"}, listed
+    forced = next(k for k in listed if k["name"] == "forced")
+    assert forced["scopes"] == ["can_read"] and not forced["scopes_pinned"], forced
+
+    # a second unpinned key, then one an admin pins at can_read
+    r = client.post("/api-keys", headers=reader_h, json={"name": "pinned"})
+    pinned_id = r.json()["id"]
+    r = client.patch(f"{keys_url}/{pinned_id}", headers=admin_h, json={"scopes": ["can_read"]})
+    assert r.status_code == 200 and r.json()["scopes_pinned"], r.text
+    # scopes stay bounded by the owner, and the body must say what it means
+    assert client.patch(
+        f"{keys_url}/{pinned_id}", headers=admin_h, json={"scopes": ["can_edit"]}
+    ).status_code == 400
+    assert client.patch(f"{keys_url}/{pinned_id}", headers=admin_h, json={}).status_code == 422
+    # a key of somebody else is not reachable through this user's URL
+    admin_key_id = next(
+        k["id"] for k in client.get("/api-keys", headers=admin_h).json() if k["name"] == "writer"
+    )
+    assert client.patch(
+        f"{keys_url}/{admin_key_id}", headers=admin_h, json={"scopes": None}
+    ).status_code == 404
+
+    # --- promoting the owner raises their unpinned keys, never the pinned ones --------------
+    r = client.patch(
+        f"/admin/users/{reader_id}", headers=admin_h,
+        json={"capabilities": ["can_edit", "create_api_key"]},
+    )
+    assert r.status_code == 200, r.text
+    by_name = {k["name"]: k for k in client.get(keys_url, headers=admin_h).json()}
+    assert by_name["forced"]["scopes"] == ["can_read_detail"], by_name
+    assert by_name["pinned"]["scopes"] == ["can_read"], by_name
+    assert by_name["ci"]["scopes"] == ["can_read"], by_name  # revoked: left alone
+    # new keys follow suit
+    r = client.post("/api-keys", headers=reader_h, json={"name": "after"})
+    assert r.json()["scopes"] == ["can_read_detail"] and not r.json()["scopes_pinned"], r.text
+
+    # resetting a pinned key hands it back to the owner default
+    r = client.patch(f"{keys_url}/{pinned_id}", headers=admin_h, json={"scopes": None})
+    assert r.json()["scopes"] == ["can_read_detail"] and not r.json()["scopes_pinned"], r.text
+
+    # --- the boot pass raises keys stuck from before promotions raised them -----------------
+    from api.main import _raise_unpinned_keys  # noqa: E402
+
+    with SessionLocal() as db:
+        k = db.get(ApiKey, forced["id"])
+        k.scopes = ["can_read"]
+        db.commit()
+    _raise_unpinned_keys()
+    _raise_unpinned_keys()  # idempotent
+    with SessionLocal() as db:
+        assert db.get(ApiKey, forced["id"]).scopes == ["can_read_detail"]
+
+    # --- admin revoke ------------------------------------------------------------------------
+    assert client.delete(f"{keys_url}/{pinned_id}", headers=admin_h).status_code == 204
+    assert client.patch(
+        f"{keys_url}/{pinned_id}", headers=admin_h, json={"scopes": None}
+    ).status_code == 409
+
     # --- deactivating the owner disables their keys immediately -----------------------------
     with SessionLocal() as db:
         u = db.scalar(select(User).where(User.username == "reader"))

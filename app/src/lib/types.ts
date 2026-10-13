@@ -92,6 +92,8 @@ export interface ApiKey {
 	expires_at: string | null;
 	revoked: boolean;
 	last_used_at: string | null;
+	/** False: the owner default, raised with their promotions. True: scopes an admin chose. */
+	scopes_pinned: boolean;
 }
 
 /** Response to `POST /api-keys`: the created key plus its one-time plaintext `key`. */

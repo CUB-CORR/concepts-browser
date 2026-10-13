@@ -2,7 +2,8 @@
 
 Lists users (including pending, empty-capability ones), and lets an admin grant/revoke
 capabilities and deactivate/reactivate accounts. Authorization is our DB's job — there is no
-LDAP attribute governing what a user may do here.
+LDAP attribute governing what a user may do here. An admin also sees and manages any user's API
+keys from that user's profile page: re-scope or revoke them.
 
 Approving a user (their first capability, granted here or at provisioning time) notifies them
 by email — see `api/mailer.py`. The send is a background task: it must not delay the admin's
@@ -16,8 +17,15 @@ from .. import ldap_auth, mailer, security
 from ..config import settings
 from ..db import get_db
 from ..deps import require_capability
-from ..models import User
-from ..schemas import AdminUserOut, AdminUserUpdate, DirectoryEntry, ProvisionUserRequest
+from ..models import ApiKey, User
+from ..schemas import (
+    AdminApiKeyUpdate,
+    AdminUserOut,
+    AdminUserUpdate,
+    ApiKeyOut,
+    DirectoryEntry,
+    ProvisionUserRequest,
+)
 
 router = APIRouter(prefix="/admin", tags=["admin"])
 
@@ -63,6 +71,7 @@ def update_user(
 
     if body.capabilities is not None:
         user.capabilities = body.capabilities  # already validated + normalized by the schema
+        _raise_unpinned_keys(db, user)
     if body.is_active is not None:
         user.is_active = body.is_active
 
@@ -72,6 +81,85 @@ def update_user(
     if was_pending and user.capabilities:
         background.add_task(mailer.send_approval_email, user)
     return user
+
+
+def _raise_unpinned_keys(db: Session, user: User) -> None:
+    """Carry a promotion over to the user's own keys. A key the user minted holds the owner
+    default (`security.default_key_scopes`), so promoting a `can_read` user to read code would
+    otherwise leave every key they already have unable to — corr-vars would keep failing until
+    they minted a new one. Pinned keys carry an admin's explicit choice and are left alone."""
+    keys = db.scalars(
+        select(ApiKey).where(
+            ApiKey.user_id == user.id,
+            ApiKey.revoked.is_(False),
+            ApiKey.scopes_pinned.is_(False),
+        )
+    )
+    for key in keys:
+        raised = security.raised_key_scopes(key.scopes, user.capabilities)
+        if raised is not None:
+            key.scopes = raised
+
+
+def _user_key(db: Session, user_id: int, key_id: int) -> ApiKey:
+    key = db.scalar(select(ApiKey).where(ApiKey.id == key_id, ApiKey.user_id == user_id))
+    if key is None:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "API key not found")
+    return key
+
+
+@router.get("/users/{user_id}/api-keys", response_model=list[ApiKeyOut])
+def list_user_keys(user_id: int, db: Session = Depends(get_db), _: User = Depends(_admin)):
+    """Every key the user holds, revoked ones included, newest first."""
+    if db.get(User, user_id) is None:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "User not found")
+    return db.scalars(
+        select(ApiKey).where(ApiKey.user_id == user_id).order_by(ApiKey.created_at.desc())
+    ).all()
+
+
+@router.patch("/users/{user_id}/api-keys/{key_id}", response_model=ApiKeyOut)
+def rescope_user_key(
+    user_id: int,
+    key_id: int,
+    body: AdminApiKeyUpdate,
+    db: Session = Depends(get_db),
+    _: User = Depends(_admin),
+):
+    """Re-scope a key in place, so its holder keeps the same secret. Scopes are bounded by the
+    owner's capabilities exactly as at minting; null resets to the owner default and unpins."""
+    owner = db.get(User, user_id)
+    if owner is None:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "User not found")
+    key = _user_key(db, user_id, key_id)
+    if key.revoked:
+        raise HTTPException(status.HTTP_409_CONFLICT, "API key is revoked")
+
+    if body.scopes is None:
+        key.scopes = security.default_key_scopes(owner.capabilities)
+        key.scopes_pinned = False
+    else:
+        allowed = security.expand_capabilities(owner.capabilities) - {security.CREATE_API_KEY}
+        requested = set(body.scopes) - {security.CREATE_API_KEY}
+        excess = sorted(requested - allowed)
+        if excess:
+            raise HTTPException(
+                status.HTTP_400_BAD_REQUEST, f"Scopes exceed the owner's capabilities: {excess}"
+            )
+        key.scopes = sorted(requested)
+        key.scopes_pinned = True
+    db.commit()
+    db.refresh(key)
+    return key
+
+
+@router.delete("/users/{user_id}/api-keys/{key_id}", status_code=status.HTTP_204_NO_CONTENT)
+def revoke_user_key(
+    user_id: int, key_id: int, db: Session = Depends(get_db), _: User = Depends(_admin)
+):
+    """Revoke someone's key (idempotent). Takes effect on the next request."""
+    _user_key(db, user_id, key_id).revoked = True
+    db.commit()
 
 
 @router.get("/directory", response_model=list[DirectoryEntry])

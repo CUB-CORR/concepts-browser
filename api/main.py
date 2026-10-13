@@ -152,6 +152,10 @@ def _migrate() -> None:
     every boot: each add is skipped when the column is already there."""
     tables = set(inspect(engine).get_table_names())
 
+    # First: the passes below load `ApiKey` rows through the ORM, which selects every column.
+    if "api_keys" in tables:
+        _pin_admin_keys_once()
+
     if "users" in tables:
         cols = {c["name"] for c in inspect(engine).get_columns("users")}
         if "ldap_guid" not in cols:
@@ -270,6 +274,9 @@ def _migrate() -> None:
         _grant_read_detail_to_existing_readers()
         _drop_can_review()
 
+    if "api_keys" in tables:
+        _raise_unpinned_keys()
+
 
 def _refold_usage_on_rule_change() -> None:
     """Rebuild `concept_usage` when what counts as usage has changed since it was folded.
@@ -387,6 +394,55 @@ def _grant_read_detail_to_existing_readers() -> None:
                 touched_users,
                 touched_keys,
             )
+
+
+def _pin_admin_keys_once() -> None:
+    """Add `api_keys.scopes_pinned`, marking the keys whose scopes an admin chose.
+
+    Only admins ever chose scopes, so a key whose owner is an admin when the column arrives is
+    taken as chosen and pinned; every other key holds the owner default and stays unpinned. Runs
+    with the column add and never again — later pins are set by the app itself.
+    """
+    if "scopes_pinned" in {c["name"] for c in inspect(engine).get_columns("api_keys")}:
+        return
+    _add_column("api_keys", "scopes_pinned", "BOOLEAN DEFAULT 0")
+    with SessionLocal() as db:
+        admins = [
+            u.id
+            for u in db.scalars(select(models.User))
+            if security.CAN_ADMIN in (u.capabilities or [])
+        ]
+        pinned = 0
+        for k in db.scalars(select(models.ApiKey).where(models.ApiKey.user_id.in_(admins))):
+            k.scopes_pinned = True
+            pinned += 1
+        db.commit()
+    log.info("migrated: pinned %d admin-scoped API key(s)", pinned)
+
+
+def _raise_unpinned_keys() -> None:
+    """Bring unpinned keys up to their owner default (`security.raised_key_scopes`).
+
+    The admin route does this on every promotion; this catches keys minted before it did, whose
+    owners were promoted since and whose keys still cannot read code. Idempotent by observable
+    state: a raised key covers the default, so a later boot finds nothing to change.
+    """
+    with SessionLocal() as db:
+        keys = db.scalars(
+            select(models.ApiKey).where(
+                models.ApiKey.revoked.is_(False), models.ApiKey.scopes_pinned.is_(False)
+            )
+        )
+        raised = 0
+        for k in keys:
+            owner = db.get(models.User, k.user_id)
+            new = security.raised_key_scopes(k.scopes, owner.capabilities if owner else [])
+            if owner is not None and new is not None:
+                k.scopes = new
+                raised += 1
+        if raised:
+            db.commit()
+            log.info("migrated: raised %d API key(s) to their owner's read level", raised)
 
 
 def _ensure_published_version_unique() -> None:

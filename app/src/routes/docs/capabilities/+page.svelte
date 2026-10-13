@@ -245,7 +245,9 @@
 			</li>
 		</ul>
 		<p>
-			In practice an ordinary key is read-only; only an administrator can issue one with more. See
+			In practice an ordinary key is read-only — reading code too when its owner may — and is raised
+			automatically when its owner is promoted. Only an administrator can issue one with more, or
+			change an existing key's scopes. See
 			<a href="/docs/clients#keys" class="text-primary underline-offset-4 hover:underline"
 				>Connecting clients</a
 			>.
