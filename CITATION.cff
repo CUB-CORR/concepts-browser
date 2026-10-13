@@ -70,5 +70,5 @@ authors:
 - name: CORR Group
 doi: 10.5281/zenodo.22342838
 repository-code: https://github.com/CUB-CORR/concepts-browser
-license-url: https://www.elastic.co/licensing/elastic-license
+license: MIT
 version: 1.0.0

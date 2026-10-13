@@ -47,7 +47,7 @@ Please make sure they pass (and extend them for new behaviour) before opening a 
 
 - Branch from `main`, keep PRs focused, and describe the motivation in the PR body.
 - By contributing you agree that your contributions are licensed under the
-  [Elastic License 2.0](LICENSE).
+  [MIT license](LICENSE).
 
 ## Releases
 

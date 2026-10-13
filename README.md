@@ -1,7 +1,7 @@
 # Concepts Browser
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.22342838.svg)](https://doi.org/10.5281/zenodo.22342838)
-[![License: Elastic 2.0](https://img.shields.io/badge/license-Elastic--2.0-blue.svg)](LICENSE)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
 A web application and API for storing, browsing and versioning **clinical concept
 definitions** — a schema-conformant JSON plus an optional Python snippet, per data source,
@@ -648,5 +648,5 @@ chmod +x scripts/backup.sh
 
 ## License
 
-Elastic License 2.0 (ELv2) — see [LICENSE](LICENSE). See also [CONTRIBUTING.md](CONTRIBUTING.md) and
+MIT — see [LICENSE](LICENSE). See also [CONTRIBUTING.md](CONTRIBUTING.md) and
 [SECURITY.md](SECURITY.md).
