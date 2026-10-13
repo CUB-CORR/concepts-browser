@@ -613,6 +613,56 @@ class ProvisionUserRequest(BaseModel):
     _known_caps = field_validator("capabilities")(_validate_capabilities)
 
 
+class ReleaseNoteRequest(BaseModel):
+    """Mail a package release's notes to every subscribed user (`POST /admin/notifications/
+    release`). Posted by the package's release workflow, which already holds everything this
+    needs — GitHub hands it the release as `github.event.release`, and a manual run looks an old
+    tag up with `gh release view` — so the API never has to reach GitHub itself.
+
+    `notes` is the release body exactly as GitHub returns it: GitHub-flavored Markdown.
+    `repository` (`owner/repo`) links `@user` and `#123` in it to GitHub."""
+    package: str = Field(default="corr_vars", min_length=1, max_length=64)
+    version: str = Field(min_length=1, max_length=64)
+    notes: str = Field(min_length=1, max_length=100_000)
+    release_url: str | None = Field(default=None, max_length=512)
+    repository: str | None = Field(default=None, max_length=140)
+    # Render and count, send nothing — the response carries the rendered HTML to look at.
+    dry_run: bool = False
+    # Send to the caller alone: a real message in a real inbox before everyone gets one.
+    only_me: bool = False
+
+    @field_validator("release_url")
+    @classmethod
+    def _http_url(cls, v):
+        if v is not None and not v.startswith(("https://", "http://")):
+            raise ValueError("release_url must be an http(s) URL")
+        return v
+
+    @field_validator("repository")
+    @classmethod
+    def _owner_repo(cls, v):
+        from .release_notes import is_repository
+
+        if v is not None and not is_repository(v):
+            raise ValueError("repository must look like owner/repo")
+        return v
+
+
+class ReleaseNoteQueued(BaseModel):
+    """What a release-note request did. `recipients` is how many users it was queued for;
+    `without_address` of them have no directory mail address and will be recorded as skipped.
+    The sends themselves run after the response — their outcomes are on the audit page, as
+    `release_note` email rows."""
+    status: Literal["queued", "dry_run"]
+    package: str
+    version: str
+    recipients: int
+    without_address: int
+    # Only on a dry run: the message as the first recipient (or the caller) would get it.
+    subject: str | None = None
+    html: str | None = None
+
+
 class ApiKeyOut(BaseModel):
     """An API key as shown on the owner's key-management page — never includes the secret."""
     model_config = ConfigDict(from_attributes=True)

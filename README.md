@@ -198,6 +198,26 @@ Optionally, approval notifications go out through **Exchange Web Services**
 (`EXCHANGE_*` settings; verify connectivity with `docker compose exec api python -m
 api.mail_check`).
 
+### Release notes
+
+`POST /admin/notifications/release` (`can_admin`) mails a package release's notes to every
+approved, active user. The release workflow of the package posts it with an API key scoped
+`can_admin`; the body carries the release as GitHub hands it over — the notes are GitHub
+Markdown and are rendered to styled HTML here, raw HTML escaped:
+
+```bash
+curl -X POST "$CONCEPTS_API/admin/notifications/release" \
+  -H "Authorization: Bearer $CONCEPTS_ADMIN_KEY" -H 'Content-Type: application/json' \
+  -d '{"package": "corr_vars", "version": "v2.0.0", "notes": "## What'"'"'s Changed\n...",
+       "release_url": "https://github.com/ORG/REPO/releases/tag/v2.0.0",
+       "repository": "ORG/REPO", "dry_run": true}'
+```
+
+`repository` links `@user` and `#123`. `dry_run` returns the recipient count and the rendered
+message without sending; `only_me` sends to the caller alone. Nothing is deduplicated —
+posting a release again mails it again. Every send is an `email` row of kind `release_note`
+on the audit page.
+
 ## Branding
 
 The default look is Charité-inspired (colors) with an attribution footer; everything
