@@ -475,6 +475,11 @@ class Config(Base):
     change_type: Mapped[str] = mapped_column(String(16), default="improvement")
     message: Mapped[str | None] = mapped_column(Text)
     status: Mapped[str] = mapped_column(String(16), default="draft", index=True)
+    # Who wrote the *definition*: `import` for a version the reference import minted from
+    # upstream, `user` for one published in the app. A file-cascade version carries its
+    # predecessor's definition and so its origin. The import never publishes over a `user`
+    # version (see `_upsert_dataset`).
+    origin: Mapped[str] = mapped_column(String(16), default=ORIGIN_USER)
 
     created_by: Mapped[int | None] = mapped_column(ForeignKey("users.id"))
     created_at: Mapped[datetime] = mapped_column(DateTime, default=_utcnow)

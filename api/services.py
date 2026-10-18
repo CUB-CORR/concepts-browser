@@ -867,6 +867,7 @@ def mint_published_version(
     validation_report: dict | None,
     author_id: int | None,
     now: datetime,
+    origin: str,
     versions: dict[int, int] | None = None,
 ) -> Config:
     """Add one published `Config` row and return it, flushed so it has an id.
@@ -887,6 +888,7 @@ def mint_published_version(
         change_type=change_type,
         message=message,
         status="published",
+        origin=origin,
         created_by=author_id,
         created_at=now,
         approved_by=author_id,
@@ -1019,6 +1021,7 @@ def cascade_file_version(
             validation_report=config.validation_report,
             author_id=author_id,
             now=now,
+            origin=config.origin,
             versions=versions,
         )
         sync_config_file_refs(db, fresh)
