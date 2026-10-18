@@ -93,6 +93,11 @@ class ImportStats:
     imported: int = 0             # variables that became a new concept (or a source's first config)
     updated: int = 0              # variables whose definition changed upstream -> new version
     unchanged: int = 0            # variables identical to what is stored
+    # Variables whose current version was published in the app, not by the import. Never
+    # overwritten: `kept_authored` counts those upstream has not moved since the import last
+    # wrote them, `conflicts` names those it has — a human has to reconcile the two.
+    kept_authored: int = 0
+    conflicts: list[str] = field(default_factory=list)
     with_python: int = 0
     attached_files: int = 0       # file versions the imported configs ended up pinned to
     # Concept versions minted by the file cascade rather than by the upsert: definitions this
@@ -118,14 +123,15 @@ class ImportStats:
 
     def log_summary(self, source_key: str) -> None:
         log.info(
-            "reference import for %r: %d new, %d updated, %d unchanged (%d with python, "
-            "%d file attachment(s)), %d file-sync version(s), %d skipped invalid, %d skipped "
-            "existing, %d skipped ambiguous; pointers +%d/-%d (%d adopted); %d python "
-            "function(s) matched no variable: %s",
+            "reference import for %r: %d new, %d updated, %d unchanged, %d kept as authored "
+            "(%d with python, %d file attachment(s)), %d file-sync version(s), %d skipped "
+            "invalid, %d skipped existing, %d skipped ambiguous; pointers +%d/-%d (%d adopted); "
+            "%d python function(s) matched no variable: %s",
             source_key,
             self.imported,
             self.updated,
             self.unchanged,
+            self.kept_authored,
             self.with_python,
             self.attached_files,
             self.files_synced,
@@ -138,6 +144,12 @@ class ImportStats:
             len(self.unmatched_python),
             ", ".join(self.unmatched_python) or "(none)",
         )
+        if self.conflicts:
+            log.warning(
+                "reference import for %r: %d variable(s) changed upstream but carry a newer "
+                "version published in the app, left as they are: %s",
+                source_key, len(self.conflicts), ", ".join(self.conflicts),
+            )
         if self.missing_upstream:
             # Not an error and not acted on: upstream dropping a variable is a signal for a
             # human, since taking a concept out of circulation is a reviewed decision.
@@ -151,6 +163,8 @@ class ImportStats:
         self.imported += other.imported
         self.updated += other.updated
         self.unchanged += other.unchanged
+        self.kept_authored += other.kept_authored
+        self.conflicts += other.conflicts
         self.with_python += other.with_python
         self.attached_files += other.attached_files
         self.files_synced += other.files_synced
@@ -170,6 +184,8 @@ class ImportStats:
             "imported": self.imported,
             "updated": self.updated,
             "unchanged": self.unchanged,
+            "kept_authored": self.kept_authored,
+            "conflicts": self.conflicts,
             "with_python": self.with_python,
             "attached_files": self.attached_files,
             "files_synced": self.files_synced,
@@ -527,6 +543,7 @@ def _mint(
         validation_report=result.report() if result.governed else None,
         author_id=author_id,
         now=now,
+        origin=ORIGIN_IMPORT,
         versions=ctx_versions,
     )
     if py:
@@ -648,6 +665,22 @@ def _matches_stored(prior: Config, type_: str, definition: dict, py: str | None)
     stored = json.loads(json.dumps(prior.json_def, sort_keys=True, default=str))
     incoming = json.loads(json.dumps(definition, sort_keys=True, default=str))
     return stored == incoming
+
+
+def _latest_imported(db: Session, concept_id: int, source_id: int) -> Config | None:
+    """The newest published version of (concept, source) whose definition the import wrote."""
+    return db.scalar(
+        select(Config)
+        .where(
+            Config.concept_id == concept_id,
+            Config.source_id == source_id,
+            Config.status == "published",
+            Config.version_no.isnot(None),
+            Config.origin == ORIGIN_IMPORT,
+        )
+        .order_by(Config.version_no.desc())
+        .limit(1)
+    )
 
 
 def _files_match(db: Session, prior: Config, source_id: int, py: str | None) -> bool:
@@ -1057,6 +1090,18 @@ def _upsert_dataset(
                 db, prior, payload.source.id, py
             ):
                 stats.unchanged += 1
+                _sync_pointers(db, concept_id, payload.pointers.get(name), taxonomies, now, stats)
+                continue
+            elif prior.origin != ORIGIN_IMPORT:
+                # Somebody published this definition in the app after the import last wrote
+                # it. Comparing upstream with *that* version would read their edit as an
+                # upstream change and publish over it; the question is whether upstream moved
+                # since the import's own last version. Either way their version stands.
+                baseline = _latest_imported(db, concept_id, payload.source.id)
+                if baseline is not None and _matches_stored(baseline, type_, definition, py):
+                    stats.kept_authored += 1
+                else:
+                    stats.conflicts.append(name)
                 _sync_pointers(db, concept_id, payload.pointers.get(name), taxonomies, now, stats)
                 continue
             else:

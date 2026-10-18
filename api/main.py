@@ -261,6 +261,7 @@ def _migrate() -> None:
 
     if "config" in tables:
         _ensure_published_version_unique()
+        _backfill_config_origin()
 
     if "concept_merge" in tables:
         with engine.begin() as conn:
@@ -443,6 +444,49 @@ def _raise_unpinned_keys() -> None:
         if raised:
             db.commit()
             log.info("migrated: raised %d API key(s) to their owner's read level", raised)
+
+
+def _backfill_config_origin() -> None:
+    """Add `config.origin` and work out, once, which existing versions the import wrote.
+
+    Before the column there was no record of it, so it is read off the history: `initial` and
+    `sync` versions are the import's, everything else was published in the app, and a `sync`
+    that repeats its predecessor's definition word for word is a file cascade and inherits the
+    predecessor's origin. A version a person published as `initial` is counted as imported —
+    the import treated it that way until now, so nothing regresses.
+    """
+    if "origin" in {c["name"] for c in inspect(engine).get_columns("config")}:
+        return
+    _add_column("config", "origin", f"VARCHAR(16) DEFAULT '{models.ORIGIN_USER}'")
+    with SessionLocal() as db:
+        rows = db.scalars(
+            select(models.Config)
+            .where(models.Config.status == "published", models.Config.version_no.isnot(None))
+            .order_by(
+                models.Config.concept_id, models.Config.source_id, models.Config.version_no
+            )
+        )
+        prev: models.Config | None = None
+        imported = 0
+        for row in rows:
+            same_series = prev is not None and (prev.concept_id, prev.source_id) == (
+                row.concept_id, row.source_id
+            )
+            if (
+                row.change_type == "sync"
+                and same_series
+                and prev.json_def == row.json_def
+                and (prev.python_code or None) == (row.python_code or None)
+            ):
+                row.origin = prev.origin
+            elif row.change_type in ("initial", "sync"):
+                row.origin = models.ORIGIN_IMPORT
+            else:
+                row.origin = models.ORIGIN_USER
+            imported += row.origin == models.ORIGIN_IMPORT
+            prev = row
+        db.commit()
+    log.info("migrated: backfilled config.origin (%d imported version(s))", imported)
 
 
 def _ensure_published_version_unique() -> None:
@@ -906,7 +950,7 @@ async def lifespan(app: FastAPI):
     Base.metadata.create_all(engine)
     _migrate()
     _seed()
-    import_reference()  # first-run only: load reference/ variables + python snippets
+    import_reference()  # every boot: upsert the reference dataset (no-op when disabled)
     # Fold whatever the audit log gained while we were down into the usage rollup. Incremental
     # and idempotent (see api/usage.py), so this is a no-op on a boot that missed nothing — and
     # it is what backfills the rollup the first time, on a database full of existing log rows.

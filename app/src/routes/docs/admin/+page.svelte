@@ -208,6 +208,11 @@
 				disappeared upstream is reported but never removed.
 			</li>
 			<li>
+				A definition somebody <strong>published in this app</strong> is never overwritten. If
+				upstream later changes that variable too, the import leaves the app's version in place and
+				reports the conflict in its log, for a person to reconcile.
+			</li>
+			<li>
 				A manual reimport <strong>pulls the documentation export first</strong> and only then runs
 				the upsert — so the two always land together, and if the documentation pull fails nothing is
 				imported at all rather than half of it.
