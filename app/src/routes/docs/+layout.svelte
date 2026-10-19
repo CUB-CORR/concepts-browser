@@ -52,7 +52,7 @@
 			<!-- The same external links the top bar's Docs menu offers, so either entry point
 			     reaches everything. -->
 			<a
-				href="https://github.com/CUB-CORR/corr-vars"
+				href="https://github.com/CUB-CORR/corr_vars"
 				target="_blank"
 				rel="noopener noreferrer"
 				class="text-muted-foreground hover:text-foreground hover:bg-accent/50 mt-2 flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm transition-colors"

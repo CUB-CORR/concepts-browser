@@ -6,7 +6,7 @@
 A web application and API for storing, browsing and versioning **clinical concept
 definitions** — a schema-conformant JSON plus an optional Python snippet, per data source,
 with full audit trails. The JSON + Python are evaluated by a separate package
-([corr-vars](https://github.com/CUB-CORR/corr-vars)); this service only stores and serves
+([corr-vars](https://github.com/CUB-CORR/corr_vars)); this service only stores and serves
 them.
 
 Created by researchers at [Charité – Universitätsmedizin Berlin](https://www.charite.de)
@@ -103,7 +103,7 @@ adjusting which types are read-only needs no schema or DB change.
 
 ### The reprodICU dataset
 
-[reprodICU](https://github.com/CUB-CORR/corr-vars) is a public harmonised ICU dataset, and its
+[reprodICU](https://github.com/CUB-CORR/corr_vars) is a public harmonised ICU dataset, and its
 158 variable mappings ship here as the reference example of a second source. An entry names a
 table (`path`), a `column` in it, whether that column is a polars struct, and a `filter`
 expression — no `table_name`/`where_clause`, so `reprodicu`'s schemas are a different shape

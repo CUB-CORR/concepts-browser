@@ -42,7 +42,7 @@
 	// entry here that is not external. The API docs URL is deployment config (see $lib/brand).
 	const docs = [
 		{ label: "User guide", href: "/docs", external: false },
-		{ label: "CORR-Vars", href: "https://github.com/CUB-CORR/corr-vars", external: true },
+		{ label: "CORR-Vars", href: "https://github.com/CUB-CORR/corr_vars", external: true },
 		...(brand.apiDocsUrl ? [{ label: "API", href: brand.apiDocsUrl, external: true }] : []),
 	];
 

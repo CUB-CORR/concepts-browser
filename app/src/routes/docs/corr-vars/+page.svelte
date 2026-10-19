@@ -85,7 +85,7 @@ client.close()`;
 	<DocSection id="corr-vars" title="What corr-vars is">
 		<p>
 			<a
-				href="https://github.com/CUB-CORR/corr-vars"
+				href="https://github.com/CUB-CORR/corr_vars"
 				target="_blank"
 				rel="noopener noreferrer"
 				class="text-primary underline-offset-4 hover:underline">corr-vars</a
