@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { Badge } from "$lib/components/ui/badge";
 	import { Button } from "$lib/components/ui/button";
+	import * as Tooltip from "$lib/components/ui/tooltip";
 	import * as AlertDialog from "$lib/components/ui/alert-dialog";
 	import { enhance, applyAction } from "$app/forms";
 	import { changeTypeVariant, formatTimestamp } from "$lib/format";
@@ -10,7 +11,7 @@
 	import CheckIcon from "@lucide/svelte/icons/check";
 	import GitBranchIcon from "@lucide/svelte/icons/git-branch";
 	import Trash2Icon from "@lucide/svelte/icons/trash-2";
-	import type { Draft, HistoryRow } from "$lib/types";
+	import type { Draft, HistoryPerson, HistoryRow } from "$lib/types";
 
 	let {
 		taxonomy,
@@ -61,6 +62,33 @@
 			: `GET /concept/${taxonomy}/${name}?v=${v}`;
 	}
 
+	const personName = (p: HistoryPerson) => p.display_name || p.username;
+
+	function initials(p: HistoryPerson): string {
+		const parts = personName(p).split(/[\s._-]+/).filter(Boolean);
+		const letters = parts.length > 1 ? parts[0][0] + parts[parts.length - 1][0] : parts[0]?.slice(0, 2) ?? "?";
+		return letters.toUpperCase();
+	}
+
+	// A stable hue per username, so the same person reads as the same colour on every row.
+	function hue(p: HistoryPerson): number {
+		let h = 0;
+		for (const ch of p.username) h = (h * 31 + ch.charCodeAt(0)) % 360;
+		return h;
+	}
+
+	// Author and publisher collapse into one avatar when the same person did both.
+	function people(r: HistoryRow): { person: HistoryPerson; role: string }[] {
+		const { author, publisher } = r;
+		if (author && publisher && author.username !== publisher.username)
+			return [
+				{ person: author, role: "Edited by" },
+				{ person: publisher, role: "Published by" },
+			];
+		const one = author ?? publisher;
+		return one ? [{ person: one, role: author && publisher ? "Edited & published by" : author ? "Edited by" : "Published by" }] : [];
+	}
+
 	let copied = $state<number | null>(null);
 	async function copyRef(v: number | null) {
 		await navigator.clipboard.writeText(reference(v));
@@ -69,6 +97,31 @@
 		setTimeout(() => (copied = v === copied ? null : copied), 1500);
 	}
 </script>
+
+{#snippet avatars(list: { person: HistoryPerson; role: string }[])}
+	{#if list.length}
+		<Tooltip.Root>
+			<Tooltip.Trigger>
+				{#snippet child({ props })}
+					<span {...props} class="flex shrink-0 -space-x-1.5">
+						{#each list as { person } (person.username)}
+							<span
+								class="ring-background flex size-6 items-center justify-center rounded-full text-[10px] font-semibold text-white ring-2"
+								style="background-color: hsl({hue(person)} 45% 45%)"
+								aria-label={personName(person)}>{initials(person)}</span
+							>
+						{/each}
+					</span>
+				{/snippet}
+			</Tooltip.Trigger>
+			<Tooltip.Content>
+				{#each list as { person, role } (person.username)}
+					<div>{role} <span class="font-semibold">{personName(person)}</span></div>
+				{/each}
+			</Tooltip.Content>
+		</Tooltip.Root>
+	{/if}
+{/snippet}
 
 <div class="flex flex-col gap-2">
 	<h4 class="text-muted-foreground text-xs font-semibold tracking-wide uppercase">History</h4>
@@ -81,13 +134,13 @@
 			{#each drafts as d (d.id)}
 				{@const open = d.id === activeDraftId}
 				<li class="flex items-center gap-3 px-3 py-2 {open ? 'bg-accent-mango/20 dark:bg-accent-mango/20' : ''}">
-					<a href={draftHref(d.id)} class="flex flex-1 items-center gap-2" data-sveltekit-noscroll>
+					<a href={draftHref(d.id)} class="flex min-w-0 flex-1 items-center gap-2" data-sveltekit-noscroll>
 						<Badge
-							class="gap-1 border-accent-mango/50 bg-accent-mango/25 font-mono text-accent-mango-fg dark:border-accent-mango/50 dark:bg-accent-mango/25 dark:text-accent-mango-fg-dark"
+							class="shrink-0 gap-1 border-accent-mango/50 bg-accent-mango/25 font-mono text-accent-mango-fg dark:border-accent-mango/50 dark:bg-accent-mango/25 dark:text-accent-mango-fg-dark"
 						>
 							<GitBranchIcon class="size-3" /> draft #{d.id}
 						</Badge>
-						<Badge variant={changeTypeVariant(d.change_type)} class="text-xs">{d.change_type}</Badge>
+						<Badge variant={changeTypeVariant(d.change_type)} class="shrink-0 text-xs">{d.change_type}</Badge>
 						{#if d.message}<span class="truncate">{d.message}</span>{/if}
 					</a>
 					<span class="shrink-0 text-xs text-accent-mango-fg dark:text-accent-mango-fg-dark">
@@ -153,20 +206,21 @@
 							? 'bg-muted/60'
 							: ''}"
 				>
-					<a href={versionHref(r.version)} class="flex flex-1 items-center gap-2" data-sveltekit-noscroll>
+					<a href={versionHref(r.version)} class="flex min-w-0 flex-1 items-center gap-2" data-sveltekit-noscroll>
 						<Badge
 							variant="secondary"
-							class="font-mono {isLatest
+							class="shrink-0 font-mono {isLatest
 								? 'border border-accent-green/50 bg-accent-green/15 text-accent-green-fg dark:bg-accent-green/25 dark:text-accent-green-fg-dark'
 								: ''}">v{r.version}</Badge
 						>
 						{#if isLatest}
 							<Badge
-								class="border-accent-green/50 bg-accent-green/25 text-xs text-accent-green-fg dark:border-accent-green/50 dark:bg-accent-green/25 dark:text-accent-green-fg-dark"
+								class="shrink-0 border-accent-green/50 bg-accent-green/25 text-xs text-accent-green-fg dark:border-accent-green/50 dark:bg-accent-green/25 dark:text-accent-green-fg-dark"
 								>current</Badge
 							>
 						{/if}
-						<Badge variant={changeTypeVariant(r.change_type)} class="text-xs">{r.change_type}</Badge>
+						<Badge variant={changeTypeVariant(r.change_type)} class="shrink-0 text-xs">{r.change_type}</Badge>
+						{@render avatars(people(r))}
 						{#if r.message}<span class="truncate">{r.message}</span>{/if}
 					</a>
 					<span class="text-muted-foreground shrink-0 text-xs">{formatTimestamp(r.committed_at)}</span>

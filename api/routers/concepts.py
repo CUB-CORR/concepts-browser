@@ -180,7 +180,12 @@ def history_rows(db: Session, concept_id: int) -> list[dict]:
         select(Config)
         .where(Config.concept_id == concept_id, Config.status == "published")
         .order_by(Config.version_no.desc())
-    )
+    ).all()
+    user_ids = {u for r in rows for u in (r.created_by, r.approved_by) if u is not None}
+    people = {
+        u.id: {"username": u.username, "display_name": u.display_name}
+        for u in (db.scalars(select(User).where(User.id.in_(user_ids))) if user_ids else [])
+    }
     return [
         {
             "version": r.version_no,
@@ -188,6 +193,8 @@ def history_rows(db: Session, concept_id: int) -> list[dict]:
             "change_type": r.change_type,
             "message": r.message,
             "committed_at": r.created_at,
+            "author": people.get(r.created_by),
+            "publisher": people.get(r.approved_by),
         }
         for r in rows
     ]

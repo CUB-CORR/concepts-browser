@@ -500,12 +500,21 @@ export interface ConceptDetail {
 	notion_url: string | null;
 }
 
+export interface HistoryPerson {
+	username: string;
+	display_name: string | null;
+}
+
 export interface HistoryRow {
 	version: number | null;
 	source: string | null;
 	change_type: string;
 	message: string | null;
 	committed_at: string;
+	/** Who wrote the draft. */
+	author: HistoryPerson | null;
+	/** Who published it — the same person as `author` for a self-publish. */
+	publisher: HistoryPerson | null;
 }
 
 export interface Draft {

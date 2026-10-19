@@ -476,6 +476,12 @@ class DocumentationUpdate(BaseModel):
     doc_status: str | None = None
 
 
+class HistoryPerson(BaseModel):
+    """Who had a hand in a version: just enough to label them."""
+    username: str
+    display_name: str | None = None
+
+
 class ConceptHistoryEntry(BaseModel):
     """One published version in a concept's history."""
     version: int | None = None
@@ -483,6 +489,10 @@ class ConceptHistoryEntry(BaseModel):
     change_type: str | None = None
     message: str | None = None
     committed_at: datetime | None = None
+    author: HistoryPerson | None = Field(None, description="who wrote the draft")
+    publisher: HistoryPerson | None = Field(
+        None, description="who published it; the same person as `author` for a self-publish"
+    )
 
 
 class TaxonomyOut(BaseModel):

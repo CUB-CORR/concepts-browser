@@ -213,6 +213,8 @@ with TestClient(app) as client:
     # history (only the published rows)
     hist = client.get("/concept/corr_v1/any_dialysis/history").json()
     assert [row["version"] for row in hist] == [4, 3, 2, 1], hist
+    # admin drafted and published v4 themselves: both roles name the same person
+    assert hist[0]["author"]["username"] == hist[0]["publisher"]["username"] == "admin", hist[0]
 
     # v / date / draft are mutually exclusive
     assert client.get("/concept/corr_v1/any_dialysis?v=1&draft=1").status_code == 400
