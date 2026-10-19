@@ -37,6 +37,9 @@ ENV NODE_USE_ENV_PROXY=1
 # needs no rebuild of the JS; empty ⇒ nothing is rendered. CI passes --build-arg.
 ARG PUBLIC_BUILD_COMMIT=""
 ENV PUBLIC_BUILD_COMMIT=$PUBLIC_BUILD_COMMIT
+# A deployment's own guide pages, bind-mounted here (e.g. ./docs:/app/docs:ro) and merged over
+# the shipped ones by file name — see app/src/lib/server/docs.ts. Absent ⇒ the shipped guide.
+ENV DOCS_DIR=/app/docs
 COPY --from=build /app/build ./build
 COPY --from=build /app/node_modules ./node_modules
 COPY --from=build /app/package.json ./package.json

@@ -2,6 +2,7 @@ import type { LayoutServerLoad } from "./$types";
 import { resolvePrefs } from "$lib/server/prefs";
 import { api } from "$lib/server/api";
 import { can } from "$lib/caps";
+import { docsMenu } from "$lib/server/docs";
 import type { PendingCounts } from "$lib/types";
 
 // Runs for every page: exposes the session user and the resolved taxonomy/date prefs. The
@@ -16,6 +17,8 @@ export const load: LayoutServerLoad = async ({ locals, url, cookies, fetch }) =>
 		taxonomy: prefs.taxonomy,
 		date: prefs.date,
 		counts: await pendingCounts(locals, fetch),
+		// The Docs menu's links, and which chapters a link may point at (see $lib/server/docs).
+		docs: docsMenu(locals.user),
 	};
 };
 

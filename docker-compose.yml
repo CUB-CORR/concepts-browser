@@ -101,7 +101,6 @@ services:
       # the literal value "none" hides an optional element).
       PUBLIC_APP_NAME: ${PUBLIC_APP_NAME:-}
       PUBLIC_LOGIN_HINT: ${PUBLIC_LOGIN_HINT:-}
-      PUBLIC_API_DOCS_URL: ${PUBLIC_API_DOCS_URL:-}
       PUBLIC_BRAND_LOGO: ${PUBLIC_BRAND_LOGO:-}
       PUBLIC_BRAND_LOGO_DARK: ${PUBLIC_BRAND_LOGO_DARK:-}
       PUBLIC_BRAND_BACKGROUND: ${PUBLIC_BRAND_BACKGROUND:-}
@@ -116,6 +115,11 @@ services:
       PUBLIC_GITHUB_ISSUE_URL: ${PUBLIC_GITHUB_ISSUE_URL:-}
       # PUBLIC_BUILD_COMMIT (footer build hash) is deliberately not listed here: CI bakes it
       # into the published image's ENV, and an empty entry would overwrite it.
+    # Optional: your own user-guide pages, merged over the shipped ones by file name (add,
+    # replace or hide chapters; the Docs menu links live in 99-external-links.md). See the
+    # "User guide" section of the README.
+    # volumes:
+    #   - ./docs:/app/docs:ro
     depends_on:
       - api
     ports:

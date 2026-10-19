@@ -1,15 +1,12 @@
 <script lang="ts">
 	import { page } from "$app/state";
 	import { cn } from "$lib/utils";
-	import { visibleChapters } from "$lib/docs/chapters";
+	import { isExternalHref } from "$lib/docs/types";
 	import DocsSearch from "$lib/components/docs/DocsSearch.svelte";
 	import BookOpenIcon from "@lucide/svelte/icons/book-open";
 	import ExternalLinkIcon from "@lucide/svelte/icons/external-link";
-	import { brand } from "$lib/brand";
 
-	let { children } = $props();
-
-	const chapters = $derived(visibleChapters(page.data.user));
+	let { data, children } = $props();
 
 	function isActive(href: string): boolean {
 		return page.url.pathname === href;
@@ -35,42 +32,40 @@
 				<BookOpenIcon class="size-4" />
 				User guide
 			</a>
-			{#each chapters as chapter (chapter.slug)}
-				<a
-					href="/docs/{chapter.slug}"
-					aria-current={isActive(`/docs/${chapter.slug}`) ? "page" : undefined}
-					class={cn(
-						"rounded-md px-3 py-1.5 pl-9 text-sm transition-colors",
-						isActive(`/docs/${chapter.slug}`)
-							? "bg-accent text-accent-foreground font-medium"
-							: "text-muted-foreground hover:text-foreground hover:bg-accent/50",
-					)}
-				>
-					{chapter.title}
-				</a>
+			<!-- Chapters and link groups in the order their file numbers give them; the link groups
+			     are the same links the top bar's Docs menu offers, so either entry point reaches
+			     everything. -->
+			{#each data.docsNav as entry (entry.slug)}
+				{#if entry.kind === "chapter"}
+					<a
+						href="/docs/{entry.slug}"
+						aria-current={isActive(`/docs/${entry.slug}`) ? "page" : undefined}
+						class={cn(
+							"rounded-md px-3 py-1.5 pl-9 text-sm transition-colors",
+							isActive(`/docs/${entry.slug}`)
+								? "bg-accent text-accent-foreground font-medium"
+								: "text-muted-foreground hover:text-foreground hover:bg-accent/50",
+						)}
+					>
+						{entry.title}
+					</a>
+				{:else}
+					<div class="mt-2 flex flex-col gap-0.5">
+						{#each entry.links as link (link.href)}
+							{@const external = isExternalHref(link.href)}
+							<a
+								href={link.href}
+								target={external ? "_blank" : undefined}
+								rel={external ? "noopener noreferrer" : undefined}
+								class="text-muted-foreground hover:text-foreground hover:bg-accent/50 flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm transition-colors"
+							>
+								{link.label}
+								{#if external}<ExternalLinkIcon class="size-3.5 opacity-60" />{/if}
+							</a>
+						{/each}
+					</div>
+				{/if}
 			{/each}
-			<!-- The same external links the top bar's Docs menu offers, so either entry point
-			     reaches everything. -->
-			<a
-				href="https://github.com/CUB-CORR/corr_vars"
-				target="_blank"
-				rel="noopener noreferrer"
-				class="text-muted-foreground hover:text-foreground hover:bg-accent/50 mt-2 flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm transition-colors"
-			>
-				CORR-Vars
-				<ExternalLinkIcon class="size-3.5 opacity-60" />
-			</a>
-			{#if brand.apiDocsUrl}
-				<a
-					href={brand.apiDocsUrl}
-					target="_blank"
-					rel="noopener noreferrer"
-					class="text-muted-foreground hover:text-foreground hover:bg-accent/50 flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm transition-colors"
-				>
-					API reference
-					<ExternalLinkIcon class="size-3.5 opacity-60" />
-				</a>
-			{/if}
 		</nav>
 	</aside>
 

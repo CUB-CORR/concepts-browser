@@ -204,7 +204,7 @@ The default look is Charité-inspired (colors) with an attribution footer; every
 institution-specific is swappable without a rebuild:
 
 - **`PUBLIC_*` env vars** (see `example.env`) override the product name, sign-in hint,
-  logos, background, footer and docs links at runtime.
+  logos, background and footer at runtime.
 - **`app/static/brand/`** holds the swappable assets: fonts (`brand.css` + open typefaces
   by default), the sign-in background and logos. A deployment can bind-mount its own
   directory over `/app/build/client/brand` to swap in corporate typefaces and imagery.
@@ -216,6 +216,54 @@ institution-specific is swappable without a rebuild:
 - **`PUBLIC_BUILD_COMMIT`** is the git commit the app was built from; the footer shows it
   abbreviated (full hash on hover) so you can tell which release is live. CI bakes it into
   the published app image as a build arg; unset, nothing is rendered.
+
+## User guide
+
+The in-app guide (`/docs`) is a folder of Markdown files, `app/docs/`, bundled into the image.
+A deployment changes it without a rebuild by bind-mounting its own folder at `/app/docs`
+(`DOCS_DIR`), which is merged over the shipped one **by slug**:
+
+| File in your folder | Effect |
+|---|---|
+| `25-our-data.md` (new slug) | adds a chapter, ordered by its number |
+| `20-quick-start.md` with a body | replaces the shipped chapter's content (and order) |
+| `quick-start.md` with frontmatter only | keeps the content, overrides `title`, `summary`, `icon` or `admin_only` |
+| `admin.md` with `hidden: true` | removes the chapter: sidebar, landing card, search and URL (404) |
+
+Files are `NN-slug.md`: the number orders the guide, the slug is the URL (`/docs/<slug>`).
+`index.md` is the landing page (its intro above the chapter cards, its sections below), and a
+file with `links:` in its frontmatter is a link group: `99-external-links.md` holds the
+CORR-Vars and API-reference links shown at the end of the sidebar and in the top bar's Docs
+menu — override it to change or drop them.
+
+```markdown
+---
+title: Our data
+summary: What this deployment's sources contain.
+icon: database        # one of app/src/lib/docs/icons.ts
+admin_only: false
+---
+
+Intro paragraph, shown before the first section.
+
+## Sources {#sources}
+
+Text, lists, tables and fenced code, plus directives for the app's own components:
+:cap[can_publish], :badge[alias], :app-name, :external[API reference]{id=api},
+::capability-table, ::data-model, and callouts:
+
+:::alert[Heads up]{icon=lock variant=destructive}
+Shown as the app's alert box.
+:::
+```
+
+`## Title {#id}` sections are linkable and searchable; `:::if{feature=issue-tracker}`,
+`{link=<id>}` and `{cap=<capability>}` (and `:::unless`) show a passage only when that
+holds. The full directive list is in `app/src/lib/components/docs/Markdown.svelte`. Raw HTML is
+ignored. Problems — a link to a chapter that does not exist, an unknown directive, a file
+without a number — are logged as `[docs]` warnings at startup. The folder is read once; restart
+the frontend after changing it (`pnpm dev` re-reads it on every request; set `DOCS_DIR` there to
+preview a deployment's folder).
 
 ## Clinical documentation
 

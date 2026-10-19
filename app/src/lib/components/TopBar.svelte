@@ -14,6 +14,7 @@
 	import { can } from "$lib/caps";
 	import { brand } from "$lib/brand";
 	import type { PendingCounts, User } from "$lib/types";
+	import { isExternalHref, type DocLink } from "$lib/docs/types";
 
 	let {
 		user,
@@ -38,13 +39,16 @@
 	];
 
 	// Documentation links. The in-app user guide comes first — it is the one that explains this
-	// app rather than a library or an endpoint list — and stays in the tab, so it is the only
-	// entry here that is not external. The API docs URL is deployment config (see $lib/brand).
-	const docs = [
+	// app rather than a library or an endpoint list — and stays in the tab. The rest come from
+	// the guide's link groups (99-external-links.md by default, see $lib/server/docs).
+	const docs = $derived([
 		{ label: "User guide", href: "/docs", external: false },
-		{ label: "CORR-Vars", href: "https://github.com/CUB-CORR/corr_vars", external: true },
-		...(brand.apiDocsUrl ? [{ label: "API", href: brand.apiDocsUrl, external: true }] : []),
-	];
+		...((page.data.docs?.links ?? []) as DocLink[]).map((l) => ({
+			label: l.label,
+			href: l.href,
+			external: isExternalHref(l.href),
+		})),
+	]);
 
 	function isActive(href: string): boolean {
 		return page.url.pathname === href || page.url.pathname.startsWith(href + "/");

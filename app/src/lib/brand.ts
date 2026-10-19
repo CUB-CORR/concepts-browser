@@ -26,8 +26,6 @@ export const brand = {
 	loginBackground: pick(env.PUBLIC_BRAND_BACKGROUND, "/brand/background.jpg"),
 	/** Hint under the sign-in heading — name your institution's credentials here. */
 	loginHint: pick(env.PUBLIC_LOGIN_HINT, "Please log in using your directory credentials."),
-	/** External API docs link in the top-bar Docs menu; "none" hides the entry. */
-	apiDocsUrl: pick(env.PUBLIC_API_DOCS_URL, "/api/docs"),
 	/** Attribution footer; "none" hides it. */
 	footerText: pick(
 		env.PUBLIC_FOOTER_TEXT,
