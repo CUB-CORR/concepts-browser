@@ -40,8 +40,39 @@ bind-mount, see Branding below), so the stock images are meant to be used as-is.
 
 - Frontend: http://localhost:3000 (sign in as the bootstrap admin)
 - API:      http://localhost:8000
-- Docs:     http://localhost:8000/docs
+- Docs:     http://localhost:8000/api/public/docs
 - Health:   http://localhost:8000/health
+
+### Behind a reverse proxy
+
+The stack expects frontend and API to share one host, with the API under **`/api`** (the
+compose file sets `ROOT_PATH=/api`). The preferred deployment is a TLS-terminating proxy
+that strips `/api` and forwards it to the API, everything else to the frontend — e.g. with
+Caddy:
+
+```caddyfile
+concepts.example.org {
+    handle /api/* {
+        uri strip_prefix /api
+        reverse_proxy localhost:8000
+    }
+
+    handle {
+        reverse_proxy localhost:3000
+    }
+}
+```
+
+(Use `host.docker.internal` instead of `localhost` if Caddy itself runs in a container.)
+Set `FRONTEND_ORIGIN` to the public URL (`https://concepts.example.org`).
+
+The in-app "API reference" link defaults to `http://localhost:8000/api/public/docs`, which
+works on a bare `docker compose up` but not for anyone else once deployed. **Point it at your
+public URL** (`https://concepts.example.org/api/public/docs`) by overriding
+`99-external-links.md` in a mounted docs folder (see [User guide](#user-guide)); the override
+replaces the whole link group, so keep the CORR-Vars entry. If the proxy serves the API
+under a different prefix, or at the root, also set `ROOT_PATH` to that prefix (empty for the
+root) so the OpenAPI docs emit correct URLs.
 
 On first boot the API creates the tables, seeds a bootstrap admin (from
 `BOOTSTRAP_ADMIN_*`), and inserts the reference data in **`api/seed.yaml`** (sources,

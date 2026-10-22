@@ -8,5 +8,5 @@ links:
     href: https://github.com/CUB-CORR/corr_vars
   - id: api
     label: API reference
-    href: /api/public/docs
+    href: http://localhost:8000/api/public/docs
 ---
