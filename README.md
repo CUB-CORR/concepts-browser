@@ -204,7 +204,8 @@ The default look is Charité-inspired (colors) with an attribution footer; every
 institution-specific is swappable without a rebuild:
 
 - **`PUBLIC_*` env vars** (see `example.env`) override the product name, sign-in hint,
-  logos, background and footer at runtime.
+  logos, background and footer at runtime, and `PUBLIC_BANNER_*` the banner above the
+  top bar.
 - **`app/static/brand/`** holds the swappable assets: fonts (`brand.css` + open typefaces
   by default), the sign-in background and logos. A deployment can bind-mount its own
   directory over `/app/build/client/brand` to swap in corporate typefaces and imagery.

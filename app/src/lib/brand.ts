@@ -11,7 +11,7 @@ import { env } from "$env/dynamic/public";
 const NONE = "none";
 
 /** Env override, or `fallback` when unset/empty; "" when explicitly disabled via "none". */
-function pick(value: string | undefined, fallback: string): string {
+export function pick(value: string | undefined, fallback: string): string {
 	if (value === NONE) return "";
 	return value ? value : fallback;
 }

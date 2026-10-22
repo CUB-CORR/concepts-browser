@@ -1,5 +1,7 @@
-// Central place for app-level, non-secret UI configuration. Edit the values here to
-// change site-wide chrome (e.g. the preview banner) without touching component code.
+import { env } from "$env/dynamic/public";
+import { pick } from "$lib/brand";
+
+// Central place for app-level, non-secret UI configuration.
 
 export interface BannerConfig {
 	/** When false, the banner is not rendered. */
@@ -18,9 +20,12 @@ export interface AppConfig {
 
 export const appConfig: AppConfig = {
 	banner: {
-		enabled: true,
-		message: "Research preview — please report any errors.",
-		linkLabel: "Report issue",
-		linkHref: "https://github.com/CUB-CORR/concepts-browser/issues/new",
+		enabled: env.PUBLIC_BANNER_MESSAGE !== "none",
+		message: pick(env.PUBLIC_BANNER_MESSAGE, "Research preview — please report any errors."),
+		linkLabel: pick(env.PUBLIC_BANNER_LINK_LABEL, "Report issue"),
+		linkHref: pick(
+			env.PUBLIC_BANNER_LINK_URL,
+			"https://github.com/CUB-CORR/concepts-browser/issues/new",
+		),
 	},
 };

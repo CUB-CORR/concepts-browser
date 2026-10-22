@@ -110,6 +110,9 @@ services:
       PUBLIC_FOOTER_URL: ${PUBLIC_FOOTER_URL:-}
       PUBLIC_DIRECTORY_LOGO: ${PUBLIC_DIRECTORY_LOGO:-}
       PUBLIC_DIRECTORY_LOGO_DARK: ${PUBLIC_DIRECTORY_LOGO_DARK:-}
+      PUBLIC_BANNER_MESSAGE: ${PUBLIC_BANNER_MESSAGE:-}
+      PUBLIC_BANNER_LINK_LABEL: ${PUBLIC_BANNER_LINK_LABEL:-}
+      PUBLIC_BANNER_LINK_URL: ${PUBLIC_BANNER_LINK_URL:-}
       # Issue-tracker URL template behind the concept page's "Report issue" button
       # ({tax_name}/{concept_name} are substituted); unset ⇒ no button.
       PUBLIC_GITHUB_ISSUE_URL: ${PUBLIC_GITHUB_ISSUE_URL:-}
